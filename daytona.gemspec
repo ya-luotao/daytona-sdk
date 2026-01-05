@@ -5,18 +5,18 @@ require_relative "lib/daytona/version"
 Gem::Specification.new do |spec|
   spec.name = "daytona"
   spec.version = Daytona::VERSION
-  spec.authors = ["Daytona Platforms Inc."]
-  spec.email = ["support@daytona.io"]
+  spec.authors = ["Luo Tao"]
+  spec.email = ["luotao@example.com"]
 
-  spec.summary = "Ruby SDK for Daytona"
-  spec.description = "Official Ruby SDK for interacting with Daytona sandboxes - cloud development environments"
-  spec.homepage = "https://github.com/daytonaio/sdk-ruby"
+  spec.summary = "Ruby SDK for Daytona (Unofficial)"
+  spec.description = "Unofficial Ruby SDK for interacting with Daytona sandboxes - cloud development environments. Not affiliated with Daytona Platforms Inc."
+  spec.homepage = "https://github.com/ya-luotao/daytona-sdk"
   spec.license = "Apache-2.0"
   spec.required_ruby_version = ">= 3.1.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/daytonaio/sdk-ruby"
-  spec.metadata["changelog_uri"] = "https://github.com/daytonaio/sdk-ruby/blob/main/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = "https://github.com/ya-luotao/daytona-sdk"
+  spec.metadata["changelog_uri"] = "https://github.com/ya-luotao/daytona-sdk/blob/main/CHANGELOG.md"
   spec.metadata["documentation_uri"] = "https://www.daytona.io/docs/sdk"
   spec.metadata["rubygems_mfa_required"] = "true"
 

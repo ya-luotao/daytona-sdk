@@ -1,6 +1,8 @@
 # Daytona Ruby SDK
 
-The official Ruby SDK for [Daytona](https://daytona.io) - a cloud development environment platform.
+> **Disclaimer**: This is an **unofficial**, community-maintained Ruby SDK for Daytona. It is not affiliated with, officially maintained, or endorsed by Daytona Platforms Inc.
+
+A Ruby SDK for [Daytona](https://daytona.io) - a cloud development environment platform.
 
 ## Installation
 
@@ -515,8 +517,8 @@ end
 
 ```bash
 # Clone the repository
-git clone https://github.com/daytonaio/daytona-sdk-ruby.git
-cd daytona-sdk-ruby
+git clone https://github.com/ya-luotao/daytona-sdk.git
+cd daytona-sdk
 
 # Install dependencies
 bundle install
@@ -546,5 +548,5 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 ## Links
 
 - [Daytona Website](https://daytona.io)
-- [API Documentation](https://docs.daytona.io)
-- [GitHub Repository](https://github.com/daytonaio/daytona-sdk-ruby)
+- [Daytona API Documentation](https://docs.daytona.io)
+- [GitHub Repository](https://github.com/ya-luotao/daytona-sdk)

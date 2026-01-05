@@ -38,7 +38,8 @@ require_relative "daytona/client"
 
 # Daytona SDK for Ruby
 #
-# Official Ruby SDK for interacting with Daytona sandboxes - cloud development environments.
+# Ruby SDK for interacting with Daytona sandboxes - cloud development environments.
+# Note: This is an unofficial, community-maintained SDK.
 #
 # @example Basic usage with API key
 #   client = Daytona::Client.new(api_key: "your-api-key")
