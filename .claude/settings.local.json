@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(xargs:*)",
+      "Bash(wc:*)",
+      "Bash(bundle install:*)",
+      "Bash(bundle exec rspec:*)",
+      "Bash(git init:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/luotao/space/working/daytona/"
+    ]
+  }
+}

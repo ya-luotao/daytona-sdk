@@ -1,0 +1,40 @@
+# Bundler
+/.bundle/
+/vendor/bundle
+Gemfile.lock
+
+# Gem build
+*.gem
+/pkg/
+
+# RSpec
+/spec/reports/
+/.rspec_status
+
+# Coverage
+/coverage/
+
+# Documentation
+/doc/
+/.yardoc/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Temporary files
+/tmp/
+*.log
