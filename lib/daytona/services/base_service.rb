@@ -23,12 +23,18 @@ module Daytona
       protected
 
       # Ensure toolbox URL is initialized
+      #
+      # The toolbox API is accessed through the main API at:
+      #   {api_base}/toolbox/{sandbox_id}/toolbox
+      #
+      # NOT through the proxyToolboxUrl which is for port forwarding
       def ensure_toolbox_url!
         return if @toolbox_url
 
-        @toolbox_url = @get_toolbox_url.call
-        @toolbox_url = "#{@toolbox_url}/" unless @toolbox_url.end_with?("/")
-        @toolbox_url = "#{@toolbox_url}#{@sandbox_id}"
+        # Build toolbox URL from the main API base URL
+        # The path is: /toolbox/{sandbox_id}/toolbox
+        api_base = @http_client.base_url
+        @toolbox_url = "#{api_base}toolbox/#{@sandbox_id}/toolbox"
       end
 
       # Get toolbox HTTP client

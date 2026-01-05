@@ -41,7 +41,8 @@ module Daytona
         body[:env] = env if env
         body[:timeout] = timeout if timeout
 
-        response = toolbox_post("/process/exec", body: body, timeout: timeout || 120)
+        # API endpoint is /process/execute (not /process/exec)
+        response = toolbox_post("/process/execute", body: body, timeout: timeout || 120)
         Models::ExecuteResponse.from_hash(response)
       end
 
@@ -75,7 +76,8 @@ module Daytona
       # @example
       #   session = sandbox.process.create_session("my-session")
       def create_session(session_id)
-        toolbox_post("/sessions", body: { sessionId: session_id })
+        # API endpoint is /process/session (singular, not /sessions)
+        toolbox_post("/process/session", body: { sessionId: session_id })
       end
 
       # Get session information
@@ -83,7 +85,7 @@ module Daytona
       # @param session_id [String] Session identifier
       # @return [Hash] Session information
       def get_session(session_id)
-        toolbox_get("/sessions/#{session_id}")
+        toolbox_get("/process/session/#{session_id}")
       end
 
       # Execute command in a session
@@ -97,7 +99,7 @@ module Daytona
       #   response = sandbox.process.execute_session_command("my-session", command: "ls -la")
       def execute_session_command(session_id, request, timeout: nil)
         body = request.is_a?(Hash) ? request : request.to_h
-        response = toolbox_post("/sessions/#{session_id}/exec", body: body, timeout: timeout || 120)
+        response = toolbox_post("/process/session/#{session_id}/exec", body: body, timeout: timeout || 120)
         Models::SessionExecuteResponse.from_hash(response)
       end
 
@@ -107,7 +109,7 @@ module Daytona
       # @param command_id [String] Command identifier
       # @return [Hash] Command information
       def get_session_command(session_id, command_id)
-        toolbox_get("/sessions/#{session_id}/commands/#{command_id}")
+        toolbox_get("/process/session/#{session_id}/command/#{command_id}")
       end
 
       # Get command logs from a session
@@ -116,22 +118,22 @@ module Daytona
       # @param command_id [String] Command identifier
       # @return [String] Command logs
       def get_session_command_logs(session_id, command_id)
-        toolbox_get("/sessions/#{session_id}/commands/#{command_id}/logs")
+        toolbox_get("/process/session/#{session_id}/command/#{command_id}/logs")
       end
 
       # List all sessions
       #
       # @return [Array<Hash>] List of sessions
       def list_sessions
-        response = toolbox_get("/sessions")
-        response["sessions"] || response[:sessions] || []
+        # Returns array of sessions directly (not wrapped in {"sessions": ...})
+        toolbox_get("/process/session")
       end
 
       # Delete a session
       #
       # @param session_id [String] Session identifier
       def delete_session(session_id)
-        toolbox_delete("/sessions/#{session_id}")
+        toolbox_delete("/process/session/#{session_id}")
       end
 
       # Create a PTY (pseudo-terminal) session
