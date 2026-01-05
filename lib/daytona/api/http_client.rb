@@ -26,7 +26,8 @@ module Daytona
       # @param jwt_token [String, nil] JWT token for authentication
       # @param organization_id [String, nil] Organization ID for JWT auth
       def initialize(base_url:, api_key: nil, jwt_token: nil, organization_id: nil)
-        @base_url = base_url
+        # Ensure base_url ends with / to prevent path replacement by URI.join
+        @base_url = base_url.end_with?("/") ? base_url : "#{base_url}/"
         @api_key = api_key
         @jwt_token = jwt_token
         @organization_id = organization_id
@@ -42,7 +43,7 @@ module Daytona
       # @return [Hash, Array, String] Parsed response body
       def get(path, params: {}, timeout: DEFAULT_TIMEOUT)
         handle_response do
-          @connection.get(path) do |req|
+          @connection.get(normalize_path(path)) do |req|
             req.params = params
             req.options.timeout = timeout
           end
@@ -57,7 +58,7 @@ module Daytona
       # @return [Hash, Array, String] Parsed response body
       def post(path, body: nil, timeout: DEFAULT_TIMEOUT)
         handle_response do
-          @connection.post(path) do |req|
+          @connection.post(normalize_path(path)) do |req|
             req.body = body.to_json if body
             req.options.timeout = timeout
           end
@@ -72,7 +73,7 @@ module Daytona
       # @return [Hash, Array, String] Parsed response body
       def put(path, body: nil, timeout: DEFAULT_TIMEOUT)
         handle_response do
-          @connection.put(path) do |req|
+          @connection.put(normalize_path(path)) do |req|
             req.body = body.to_json if body
             req.options.timeout = timeout
           end
@@ -87,7 +88,7 @@ module Daytona
       # @return [Hash, Array, String] Parsed response body
       def patch(path, body: nil, timeout: DEFAULT_TIMEOUT)
         handle_response do
-          @connection.patch(path) do |req|
+          @connection.patch(normalize_path(path)) do |req|
             req.body = body.to_json if body
             req.options.timeout = timeout
           end
@@ -101,7 +102,7 @@ module Daytona
       # @return [Hash, Array, String, nil] Parsed response body
       def delete(path, timeout: DEFAULT_TIMEOUT)
         handle_response do
-          @connection.delete(path) do |req|
+          @connection.delete(normalize_path(path)) do |req|
             req.options.timeout = timeout
           end
         end
@@ -125,7 +126,7 @@ module Daytona
         )
 
         handle_response do
-          multipart_connection.post(path) do |req|
+          multipart_connection.post(normalize_path(path)) do |req|
             req.body = payload
             req.options.timeout = timeout
           end
@@ -142,7 +143,7 @@ module Daytona
       # @return [Hash, Array, String] Parsed response body
       def upload_bytes(path, content:, filename: "file", content_type: "application/octet-stream", timeout: 1800)
         handle_response do
-          @connection.post(path) do |req|
+          @connection.post(normalize_path(path)) do |req|
             req.headers["Content-Type"] = content_type
             req.headers["Content-Disposition"] = "attachment; filename=\"#{filename}\""
             req.body = content
@@ -157,7 +158,7 @@ module Daytona
       # @param timeout [Integer] Request timeout in seconds
       # @return [String] Raw response body (binary)
       def download_file(path, timeout: 1800)
-        response = @connection.get(path) do |req|
+        response = @connection.get(normalize_path(path)) do |req|
           req.options.timeout = timeout
         end
 
@@ -167,8 +168,21 @@ module Daytona
 
       private
 
+      # Normalize path by removing leading slash to work with URI.join
+      #
+      # @param path [String] API endpoint path
+      # @return [String] Normalized path without leading slash
+      def normalize_path(path)
+        path.to_s.sub(%r{^/+}, "")
+      end
+
       def build_connection
-        Faraday.new(url: @base_url) do |conn|
+        # Check if SSL verification should be disabled (for MITM proxies)
+        ssl_verify = ENV.fetch("DAYTONA_SSL_VERIFY", "true").downcase != "false"
+
+        ssl_options = { verify: ssl_verify }
+
+        Faraday.new(url: @base_url, ssl: ssl_options) do |conn|
           conn.request :json
           conn.response :json, content_type: /\bjson$/
           conn.adapter Faraday.default_adapter
@@ -209,7 +223,32 @@ module Daytona
       def handle_response
         response = yield
         handle_error(response) unless response.success?
-        response.body
+
+        body = response.body
+        content_type = response.headers["content-type"] rescue "unknown"
+
+        # Log response details for debugging
+        if defined?(Rails) && Rails.logger
+          Rails.logger.debug "[Daytona::HttpClient] Response status=#{response.status}, content-type=#{content_type}, body_type=#{body.class}"
+        end
+
+        # If body is a string but should be JSON, try to parse it
+        if body.is_a?(String) && !body.empty?
+          if content_type&.include?("json") || body.start_with?('{', '[')
+            begin
+              parsed = JSON.parse(body)
+              Rails.logger.debug "[Daytona::HttpClient] Manually parsed JSON response" if defined?(Rails)
+              return parsed
+            rescue JSON::ParserError => e
+              Rails.logger.warn "[Daytona::HttpClient] Failed to parse as JSON: #{e.message}" if defined?(Rails)
+            end
+          end
+
+          # Still a string - log for debugging
+          Rails.logger.warn "[Daytona::HttpClient] Unexpected string response (content-type: #{content_type}): #{body[0..200]}" if defined?(Rails)
+        end
+
+        body
       rescue Faraday::TimeoutError => e
         raise Daytona::TimeoutError, "Request timed out: #{e.message}"
       rescue Faraday::ConnectionFailed => e

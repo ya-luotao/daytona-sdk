@@ -107,12 +107,12 @@ module Daytona
 
       # Create the sandbox
       start_time = Time.now
-      response = @http_client.post("/sandboxes", body: body, timeout: timeout.zero? ? nil : timeout)
+      response = @http_client.post("/sandbox", body: body, timeout: timeout.zero? ? nil : timeout)
 
       # Handle build logs if creating from image
       if response["state"] == "pending_build" && on_snapshot_create_logs
         handle_build_logs(response["id"], on_snapshot_create_logs, timeout, start_time)
-        response = @http_client.get("/sandboxes/#{response['id']}")
+        response = @http_client.get("/sandbox/#{response['id']}")
       end
 
       # Create Sandbox instance
@@ -146,7 +146,30 @@ module Daytona
     def get(sandbox_id_or_name)
       raise DaytonaError, "sandbox_id_or_name is required" if sandbox_id_or_name.nil? || sandbox_id_or_name.empty?
 
-      response = @http_client.get("/sandboxes/#{sandbox_id_or_name}")
+      response = @http_client.get("/sandbox/#{sandbox_id_or_name}")
+
+      # Validate response is a hash (single sandbox)
+      unless response.is_a?(Hash)
+        # If it's a string that looks like JSON, try to parse it
+        if response.is_a?(String) && response.start_with?('{')
+          begin
+            parsed = JSON.parse(response)
+            if parsed.is_a?(Hash)
+              Rails.logger.info "[Daytona::Client] Parsed string response as JSON" if defined?(Rails)
+              response = parsed
+            end
+          rescue JSON::ParserError => e
+            Rails.logger.error "[Daytona::Client] Failed to parse response as JSON: #{e.message}" if defined?(Rails)
+          end
+        end
+      end
+
+      # Still not a hash? Raise error with details
+      unless response.is_a?(Hash)
+        response_preview = response.to_s[0..500] rescue response.class.to_s
+        Rails.logger.error "[Daytona::Client] Invalid response type #{response.class} for sandbox #{sandbox_id_or_name}: #{response_preview}" if defined?(Rails)
+        raise DaytonaError, "Invalid API response (#{response.class}): #{response_preview}"
+      end
 
       Sandbox.new(
         sandbox_data: response,
@@ -195,9 +218,16 @@ module Daytona
       params[:page] = page if page
       params[:limit] = limit if limit
 
-      response = @http_client.get("/sandboxes", params: params)
+      response = @http_client.get("/sandbox", params: params)
 
-      items = (response["items"] || []).map do |sandbox_data|
+      # Handle both array response (non-paginated) and object response (paginated)
+      sandbox_list = if response.is_a?(Array)
+        response
+      else
+        response["items"] || []
+      end
+
+      items = sandbox_list.map do |sandbox_data|
         Sandbox.new(
           sandbox_data: sandbox_data,
           http_client: @http_client,
@@ -205,11 +235,16 @@ module Daytona
         )
       end
 
+      # For array responses, calculate pagination from the result
+      total = response.is_a?(Array) ? response.length : (response["total"] || items.length)
+      current_page = response.is_a?(Array) ? 1 : (response["page"] || 1)
+      total_pages = response.is_a?(Array) ? 1 : (response["totalPages"] || response["total_pages"] || 1)
+
       PaginatedSandboxes.new(
         items: items,
-        total: response["total"] || 0,
-        page: response["page"] || 1,
-        total_pages: response["totalPages"] || response["total_pages"] || 1
+        total: total,
+        page: current_page,
+        total_pages: total_pages
       )
     end
 
@@ -319,7 +354,7 @@ module Daytona
         elapsed = Time.now - start_time
         break if !timeout.zero? && elapsed >= timeout
 
-        response = @http_client.get("/sandboxes/#{sandbox_id}")
+        response = @http_client.get("/sandbox/#{sandbox_id}")
         state = response["state"]
 
         break if %w[started starting error build_failed].include?(state)

@@ -123,7 +123,7 @@ module Daytona
     #   sandbox.refresh_data
     #   puts "State: #{sandbox.state}"
     def refresh_data
-      response = @http_client.get("/sandboxes/#{@id}")
+      response = @http_client.get("/sandbox/#{@id}")
       process_sandbox_data(response)
     end
 
@@ -180,7 +180,7 @@ module Daytona
     #   sandbox.set_labels("env" => "production", "team" => "backend")
     def set_labels(labels)
       string_labels = labels.transform_values { |v| v.is_a?(TrueClass) || v.is_a?(FalseClass) ? v.to_s.downcase : v.to_s }
-      response = @http_client.put("/sandboxes/#{@id}/labels", body: { labels: string_labels })
+      response = @http_client.put("/sandbox/#{@id}/labels", body: { labels: string_labels })
       @labels = response["labels"] || response[:labels] || string_labels
     end
 
@@ -196,7 +196,7 @@ module Daytona
       raise DaytonaError, "Timeout must be a non-negative number" if timeout.negative?
 
       start_time = Time.now
-      @http_client.post("/sandboxes/#{@id}/start", timeout: timeout.zero? ? nil : timeout)
+      @http_client.post("/sandbox/#{@id}/start", timeout: timeout.zero? ? nil : timeout)
       refresh_data
 
       remaining = timeout.zero? ? nil : [0.001, timeout - (Time.now - start_time)].max
@@ -215,7 +215,7 @@ module Daytona
       raise DaytonaError, "Timeout must be a non-negative number" if timeout.negative?
 
       start_time = Time.now
-      @http_client.post("/sandboxes/#{@id}/stop", timeout: timeout.zero? ? nil : timeout)
+      @http_client.post("/sandbox/#{@id}/stop", timeout: timeout.zero? ? nil : timeout)
       refresh_data_safe
 
       remaining = timeout.zero? ? nil : [0.001, timeout - (Time.now - start_time)].max
@@ -229,7 +229,7 @@ module Daytona
     # @example
     #   sandbox.delete
     def delete(timeout: 60)
-      @http_client.delete("/sandboxes/#{@id}", timeout: timeout.zero? ? nil : timeout)
+      @http_client.delete("/sandbox/#{@id}", timeout: timeout.zero? ? nil : timeout)
       refresh_data_safe
     end
 
@@ -238,7 +238,7 @@ module Daytona
     # @example
     #   sandbox.archive
     def archive
-      @http_client.post("/sandboxes/#{@id}/archive")
+      @http_client.post("/sandbox/#{@id}/archive")
       refresh_data
     end
 
@@ -249,7 +249,7 @@ module Daytona
       raise DaytonaError, "Timeout must be a non-negative number" if timeout.negative?
 
       start_time = Time.now
-      @http_client.post("/sandboxes/#{@id}/recover", timeout: timeout.zero? ? nil : timeout)
+      @http_client.post("/sandbox/#{@id}/recover", timeout: timeout.zero? ? nil : timeout)
       refresh_data
 
       remaining = timeout.zero? ? nil : [0.001, timeout - (Time.now - start_time)].max
@@ -310,7 +310,7 @@ module Daytona
     def set_autostop_interval(interval)
       raise DaytonaError, "Auto-stop interval must be a non-negative integer" if !interval.is_a?(Integer) || interval.negative?
 
-      @http_client.put("/sandboxes/#{@id}/autostop-interval", body: { interval: interval })
+      @http_client.put("/sandbox/#{@id}/autostop-interval", body: { interval: interval })
       @auto_stop_interval = interval
     end
 
@@ -320,7 +320,7 @@ module Daytona
     def set_auto_archive_interval(interval)
       raise DaytonaError, "Auto-archive interval must be a non-negative integer" if !interval.is_a?(Integer) || interval.negative?
 
-      @http_client.put("/sandboxes/#{@id}/auto-archive-interval", body: { interval: interval })
+      @http_client.put("/sandbox/#{@id}/auto-archive-interval", body: { interval: interval })
       @auto_archive_interval = interval
     end
 
@@ -328,7 +328,7 @@ module Daytona
     #
     # @param interval [Integer] Minutes before auto-delete (negative = disable, 0 = immediate)
     def set_auto_delete_interval(interval)
-      @http_client.put("/sandboxes/#{@id}/auto-delete-interval", body: { interval: interval })
+      @http_client.put("/sandbox/#{@id}/auto-delete-interval", body: { interval: interval })
       @auto_delete_interval = interval
     end
 
@@ -341,7 +341,7 @@ module Daytona
     #   link = sandbox.get_preview_link(3000)
     #   puts "URL: #{link['url']}"
     def get_preview_link(port)
-      @http_client.get("/sandboxes/#{@id}/ports/#{port}/preview-url")
+      @http_client.get("/sandbox/#{@id}/ports/#{port}/preview-url")
     end
 
     # Create SSH access token
@@ -350,14 +350,14 @@ module Daytona
     # @return [Hash] SSH access details
     def create_ssh_access(expires_in_minutes: nil)
       params = expires_in_minutes ? { expiresInMinutes: expires_in_minutes } : {}
-      @http_client.post("/sandboxes/#{@id}/ssh-access", body: params)
+      @http_client.post("/sandbox/#{@id}/ssh-access", body: params)
     end
 
     # Revoke SSH access token
     #
     # @param token [String] Token to revoke
     def revoke_ssh_access(token)
-      @http_client.delete("/sandboxes/#{@id}/ssh-access/#{token}")
+      @http_client.delete("/sandbox/#{@id}/ssh-access/#{token}")
     end
 
     # Validate SSH access token
@@ -365,17 +365,22 @@ module Daytona
     # @param token [String] Token to validate
     # @return [Hash] Validation result
     def validate_ssh_access(token)
-      @http_client.post("/sandboxes/ssh-access/validate", body: { token: token })
+      @http_client.post("/sandbox/ssh-access/validate", body: { token: token })
     end
 
     # Refresh sandbox activity timestamp
     def refresh_activity
-      @http_client.post("/sandboxes/#{@id}/activity")
+      @http_client.post("/sandbox/#{@id}/activity")
     end
 
     private
 
     def process_sandbox_data(data)
+      # Guard against non-hash data (e.g., string or array responses)
+      unless data.is_a?(Hash)
+        raise DaytonaError, "Invalid sandbox data: expected Hash, got #{data.class}"
+      end
+
       @id = data["id"] || data[:id]
       @name = data["name"] || data[:name]
       @organization_id = data["organizationId"] || data["organization_id"] || data[:organization_id]
