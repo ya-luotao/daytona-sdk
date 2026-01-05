@@ -331,10 +331,17 @@ module Daytona
 
       # Handle image-based creation
       if params.respond_to?(:image) && params.image
-        image_content = params.image.is_a?(String) ? params.image : params.image.dockerfile
-        body[:buildInfo] = {
-          dockerfileContent: "FROM #{image_content}\n",
-        }
+        if params.image.is_a?(String)
+          # Simple image name - wrap with FROM
+          body[:buildInfo] = {
+            dockerfileContent: "FROM #{params.image}\n",
+          }
+        else
+          # Daytona::Image object - use dockerfile directly (already has FROM)
+          body[:buildInfo] = {
+            dockerfileContent: params.image.dockerfile,
+          }
+        end
       end
 
       # Handle resources

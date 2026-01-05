@@ -6,6 +6,7 @@
 require "faraday"
 require "faraday/multipart"
 require "json"
+require "stringio"
 
 module Daytona
   module API
@@ -133,7 +134,7 @@ module Daytona
         end
       end
 
-      # Upload raw bytes
+      # Upload raw bytes using multipart form data
       #
       # @param path [String] API endpoint path
       # @param content [String] File content as bytes
@@ -142,11 +143,20 @@ module Daytona
       # @param timeout [Integer] Request timeout in seconds
       # @return [Hash, Array, String] Parsed response body
       def upload_bytes(path, content:, filename: "file", content_type: "application/octet-stream", timeout: 1800)
+        # Create a StringIO to simulate a file for multipart upload
+        io = StringIO.new(content)
+
+        payload = {
+          file: Faraday::Multipart::FilePart.new(
+            io,
+            content_type,
+            filename
+          )
+        }
+
         handle_response do
-          @connection.post(normalize_path(path)) do |req|
-            req.headers["Content-Type"] = content_type
-            req.headers["Content-Disposition"] = "attachment; filename=\"#{filename}\""
-            req.body = content
+          multipart_connection.post(normalize_path(path)) do |req|
+            req.body = payload
             req.options.timeout = timeout
           end
         end
