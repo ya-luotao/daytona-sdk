@@ -9,7 +9,7 @@ A Ruby SDK for [Daytona](https://daytona.io) - a cloud development environment p
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'daytona'
+gem 'daytona', github: 'ya-luotao/daytona-sdk'
 ```
 
 And then execute:
@@ -18,10 +18,13 @@ And then execute:
 bundle install
 ```
 
-Or install it yourself:
+Or install directly from GitHub:
 
 ```bash
-gem install daytona
+git clone https://github.com/ya-luotao/daytona-sdk.git
+cd daytona-sdk
+bundle install
+rake install
 ```
 
 ## Quick Start
