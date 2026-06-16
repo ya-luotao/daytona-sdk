@@ -4,7 +4,7 @@ require "simplecov"
 SimpleCov.start do
   add_filter "/spec/"
   # Guard against coverage regressions. Ratchet this up as coverage improves.
-  minimum_coverage 74
+  minimum_coverage 85
 end if ENV["COVERAGE"]
 
 require "daytona"

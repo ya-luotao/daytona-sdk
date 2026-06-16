@@ -102,6 +102,65 @@ RSpec.describe Daytona::Client do
     end
   end
 
+  describe "#create" do
+    it "rejects a negative timeout" do
+      expect { client.create(timeout: -1) }.to raise_error(Daytona::DaytonaError)
+    end
+
+    it "creates a default Python snapshot sandbox" do
+      stub = stub_request(:post, sandbox_url)
+             .to_return(status: 200, body: { id: "sb-new", state: "started" }.to_json,
+                        headers: { "Content-Type" => "application/json" })
+
+      sandbox = client.create
+
+      expect(sandbox).to be_a(Daytona::Sandbox)
+      expect(sandbox.id).to eq("sb-new")
+      expect(stub).to have_been_requested
+    end
+
+    it "builds a Dockerfile buildInfo for a string image and waits for start" do
+      stub = stub_request(:post, sandbox_url)
+             .with(body: hash_including(buildInfo: { dockerfileContent: "FROM python:3.12-slim\n" }))
+             .to_return(status: 200, body: { id: "sb-img", state: "starting" }.to_json,
+                        headers: { "Content-Type" => "application/json" })
+      stub_request(:get, sandbox_url("/sb-img"))
+        .to_return(status: 200, body: { id: "sb-img", state: "started" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      params = Daytona::Models::CreateSandboxFromImageParams.new(image: "python:3.12-slim")
+      sandbox = client.create(params)
+
+      expect(sandbox.state).to eq("started")
+      expect(stub).to have_been_requested
+    end
+
+    it "rejects a negative auto_stop_interval in params" do
+      params = Daytona::Models::CreateSandboxFromSnapshotParams.new(auto_stop_interval: -5)
+
+      expect { client.create(params) }.to raise_error(Daytona::DaytonaError, /auto_stop_interval/)
+    end
+  end
+
+  describe "lifecycle delegation" do
+    let(:sandbox) { instance_double(Daytona::Sandbox) }
+
+    it "#start delegates to the sandbox" do
+      expect(sandbox).to receive(:start).with(timeout: 30)
+      client.start(sandbox, timeout: 30)
+    end
+
+    it "#stop delegates to the sandbox" do
+      expect(sandbox).to receive(:stop).with(timeout: 60)
+      client.stop(sandbox)
+    end
+
+    it "#delete delegates to the sandbox" do
+      expect(sandbox).to receive(:delete).with(timeout: 60)
+      client.delete(sandbox)
+    end
+  end
+
   describe "#find_one" do
     it "delegates to #get when an id is given" do
       stub_request(:get, sandbox_url("/sb-1"))
