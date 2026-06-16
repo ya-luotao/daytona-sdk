@@ -206,7 +206,10 @@ module Daytona
     #     ["bash", "-c", "echo Hello again"]
     #   )
     def run_commands(*commands)
-      commands.flatten.each do |command|
+      # Iterate the top-level arguments without flattening so an Array argument
+      # is treated as a single Docker exec-form command (each token quoted),
+      # while String arguments remain shell-form commands.
+      commands.each do |command|
         if command.is_a?(Array)
           escaped = command.map { |c| "\"#{c.gsub('"', '\\"')}\"" }
           @dockerfile += "RUN #{escaped.join(' ')}\n"

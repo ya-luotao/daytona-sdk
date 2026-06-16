@@ -95,4 +95,49 @@ RSpec.describe Daytona::Services::LspServer do
       expect(stub).to have_been_requested
     end
   end
+
+  describe "#did_change" do
+    it "POSTs the path and new content" do
+      stub = stub_request(:post, lsp_url("/lsp/did-change"))
+             .with(body: { path: "/p/main.py", content: "x=2" })
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      lsp.did_change("/p/main.py", "x=2")
+
+      expect(stub).to have_been_requested
+    end
+  end
+
+  describe "#definition" do
+    it "returns the raw definition response" do
+      stub_request(:post, lsp_url("/lsp/definition"))
+        .to_return(status: 200, body: { "path" => "/p/lib.py" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(lsp.definition("/p/main.py", { line: 5, character: 1 }))
+        .to eq({ "path" => "/p/lib.py" })
+    end
+  end
+
+  describe "#references" do
+    it "returns the references array" do
+      stub_request(:post, lsp_url("/lsp/references"))
+        .to_return(status: 200, body: { references: [{ "path" => "/p/main.py" }] }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(lsp.references("/p/main.py", { line: 1, character: 1 }))
+        .to eq([{ "path" => "/p/main.py" }])
+    end
+  end
+
+  describe "#format" do
+    it "returns the edits array" do
+      stub_request(:post, lsp_url("/lsp/format"))
+        .with(body: { path: "/p/main.py" })
+        .to_return(status: 200, body: { edits: [{ "newText" => "x = 1" }] }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(lsp.format("/p/main.py")).to eq([{ "newText" => "x = 1" }])
+    end
+  end
 end

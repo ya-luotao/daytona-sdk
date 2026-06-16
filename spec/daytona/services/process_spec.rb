@@ -102,4 +102,68 @@ RSpec.describe Daytona::Services::Process do
       expect(process.list_pty_sessions).to eq([{ "id" => "pty1" }])
     end
   end
+
+  describe "session command introspection" do
+    it "get_session_command GETs the command" do
+      stub_request(:get, toolbox_url("/process/session/s1/command/c1"))
+        .to_return(status: 200, body: { "exitCode" => 0 }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(process.get_session_command("s1", "c1")).to eq({ "exitCode" => 0 })
+    end
+
+    it "get_session_command_logs GETs the logs" do
+      stub_request(:get, toolbox_url("/process/session/s1/command/c1/logs"))
+        .to_return(status: 200, body: "log output")
+
+      expect(process.get_session_command_logs("s1", "c1")).to eq("log output")
+    end
+
+    it "list_sessions returns the raw array" do
+      stub_request(:get, toolbox_url("/process/session"))
+        .to_return(status: 200, body: [{ "sessionId" => "s1" }].to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(process.list_sessions).to eq([{ "sessionId" => "s1" }])
+    end
+  end
+
+  describe "PTY lifecycle" do
+    it "create_pty_session POSTs id and optional fields" do
+      stub = stub_request(:post, toolbox_url("/pty"))
+             .with(body: { id: "pty1", cwd: "/home/user", ptySize: { cols: 80, rows: 24 } })
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      process.create_pty_session("pty1", cwd: "/home/user", pty_size: { cols: 80, rows: 24 })
+
+      expect(stub).to have_been_requested
+    end
+
+    it "get_pty_session_info GETs the session" do
+      stub_request(:get, toolbox_url("/pty/pty1"))
+        .to_return(status: 200, body: { "id" => "pty1" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(process.get_pty_session_info("pty1")).to eq({ "id" => "pty1" })
+    end
+
+    it "kill_pty_session DELETEs the session" do
+      stub = stub_request(:delete, toolbox_url("/pty/pty1"))
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      process.kill_pty_session("pty1")
+
+      expect(stub).to have_been_requested
+    end
+
+    it "resize_pty_session POSTs the new size" do
+      stub = stub_request(:post, toolbox_url("/pty/pty1/resize"))
+             .with(body: { cols: 100, rows: 40 })
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      process.resize_pty_session("pty1", { cols: 100, rows: 40 })
+
+      expect(stub).to have_been_requested
+    end
+  end
 end

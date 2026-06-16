@@ -107,5 +107,91 @@ RSpec.describe Daytona::Services::ComputerUse do
 
       expect(computer.display.get_windows).to eq([{ "id" => "w1" }])
     end
+
+    it "get_info GETs the display info" do
+      stub_request(:get, toolbox_url("/computer-use/display/info"))
+        .to_return(status: 200, body: { "width" => 1920 }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(computer.display.get_info).to eq({ "width" => 1920 })
+    end
+
+    it "focus_window POSTs to the focus endpoint" do
+      stub = stub_request(:post, toolbox_url("/computer-use/display/windows/w1/focus"))
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      computer.display.focus_window("w1")
+
+      expect(stub).to have_been_requested
+    end
+  end
+
+  describe "process management" do
+    it "stop POSTs to the stop endpoint" do
+      stub = stub_request(:post, toolbox_url("/computer-use/stop"))
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      computer.stop
+
+      expect(stub).to have_been_requested
+    end
+
+    it "get_process_status GETs a named process" do
+      stub_request(:get, toolbox_url("/computer-use/processes/xvfb/status"))
+        .to_return(status: 200, body: { "running" => true }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(computer.get_process_status("xvfb")).to eq({ "running" => true })
+    end
+
+    it "restart_process POSTs to the restart endpoint" do
+      stub = stub_request(:post, toolbox_url("/computer-use/processes/xvfb/restart"))
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      computer.restart_process("xvfb")
+
+      expect(stub).to have_been_requested
+    end
+  end
+
+  describe "more input helpers" do
+    it "mouse get_position GETs the position" do
+      stub_request(:get, toolbox_url("/computer-use/mouse/position"))
+        .to_return(status: 200, body: { "x" => 1, "y" => 2 }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(computer.mouse.get_position).to eq({ "x" => 1, "y" => 2 })
+    end
+
+    it "mouse scroll POSTs direction and amount" do
+      stub = stub_request(:post, toolbox_url("/computer-use/mouse/scroll"))
+             .with(body: { x: 1, y: 2, direction: "down", amount: 3 })
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      computer.mouse.scroll(1, 2, "down", amount: 3)
+
+      expect(stub).to have_been_requested
+    end
+
+    it "keyboard hotkey POSTs the key combination" do
+      stub = stub_request(:post, toolbox_url("/computer-use/keyboard/hotkey"))
+             .with(body: { keys: %w[ctrl c] })
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      computer.keyboard.hotkey(%w[ctrl c])
+
+      expect(stub).to have_been_requested
+    end
+
+    it "screenshot take_region POSTs the region" do
+      stub = stub_request(:post, toolbox_url("/computer-use/screenshot/region"))
+             .with(body: { region: { x: 0, y: 0, width: 10, height: 10 }, showCursor: false })
+             .to_return(status: 200, body: { "data" => "x" }.to_json,
+                        headers: { "Content-Type" => "application/json" })
+
+      computer.screenshot.take_region({ x: 0, y: 0, width: 10, height: 10 })
+
+      expect(stub).to have_been_requested
+    end
   end
 end

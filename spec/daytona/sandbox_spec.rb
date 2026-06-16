@@ -187,5 +187,116 @@ RSpec.describe Daytona::Sandbox do
 
       expect(stub).to have_been_requested
     end
+
+    it "validate_ssh_access POSTs the token" do
+      stub = stub_request(:post, "#{api_url}/sandbox/ssh-access/validate")
+             .with(body: { token: "abc" })
+             .to_return(status: 200, body: { valid: true }.to_json,
+                        headers: { "Content-Type" => "application/json" })
+
+      expect(sandbox.validate_ssh_access("abc")).to eq({ "valid" => true })
+      expect(stub).to have_been_requested
+    end
+  end
+
+  describe "#stop" do
+    it "POSTs stop and waits for the stopped state" do
+      stop_stub = stub_request(:post, sandbox_url("/sb-1/stop"))
+                  .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+      stub_request(:get, sandbox_url("/sb-1"))
+        .to_return(status: 200, body: { id: "sb-1", state: "stopped" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      sandbox.stop
+
+      expect(stop_stub).to have_been_requested
+      expect(sandbox.state).to eq("stopped")
+    end
+  end
+
+  describe "#archive" do
+    it "POSTs archive and refreshes" do
+      archive_stub = stub_request(:post, sandbox_url("/sb-1/archive"))
+                     .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+      stub_request(:get, sandbox_url("/sb-1"))
+        .to_return(status: 200, body: { id: "sb-1", state: "archived" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      sandbox.archive
+
+      expect(archive_stub).to have_been_requested
+      expect(sandbox.state).to eq("archived")
+    end
+  end
+
+  describe "#recover" do
+    it "POSTs recover and waits for start" do
+      recover_stub = stub_request(:post, sandbox_url("/sb-1/recover"))
+                     .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+      stub_request(:get, sandbox_url("/sb-1"))
+        .to_return(status: 200, body: { id: "sb-1", state: "started" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      sandbox.recover
+
+      expect(recover_stub).to have_been_requested
+    end
+  end
+
+  describe "#get_work_dir" do
+    it "reads dir from the toolbox work-dir endpoint" do
+      stub_request(:get, toolbox_url("/info/work-dir"))
+        .to_return(status: 200, body: { dir: "/workspace" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(sandbox.get_work_dir).to eq("/workspace")
+    end
+  end
+
+  describe "auto interval setters" do
+    it "set_auto_archive_interval PUTs the interval" do
+      stub_request(:put, sandbox_url("/sb-1/auto-archive-interval"))
+        .with(body: { interval: 120 })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      sandbox.set_auto_archive_interval(120)
+
+      expect(sandbox.auto_archive_interval).to eq(120)
+    end
+
+    it "set_auto_archive_interval rejects negatives" do
+      expect { sandbox.set_auto_archive_interval(-1) }.to raise_error(Daytona::DaytonaError)
+    end
+
+    it "set_auto_delete_interval PUTs the interval (allowing negatives)" do
+      stub_request(:put, sandbox_url("/sb-1/auto-delete-interval"))
+        .with(body: { interval: -1 })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      sandbox.set_auto_delete_interval(-1)
+
+      expect(sandbox.auto_delete_interval).to eq(-1)
+    end
+  end
+
+  describe "#refresh_activity" do
+    it "POSTs to the activity endpoint" do
+      stub = stub_request(:post, sandbox_url("/sb-1/activity"))
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      sandbox.refresh_activity
+
+      expect(stub).to have_been_requested
+    end
+  end
+
+  describe "#create_lsp_server" do
+    it "builds an LspServer for the sandbox" do
+      lsp = sandbox.create_lsp_server("python", "/home/user/project")
+
+      expect(lsp).to be_a(Daytona::Services::LspServer)
+      expect(lsp.language_id).to eq("python")
+      expect(lsp.path_to_project).to eq("/home/user/project")
+    end
   end
 end

@@ -146,4 +146,79 @@ RSpec.describe Daytona::Services::FileSystem do
       expect(fs.read_file_as_text("/config.json")).to eq("{\"a\":1}")
     end
   end
+
+  describe "#get_file_info" do
+    it "GETs the info endpoint with the encoded path" do
+      stub_request(:get, toolbox_url("/filesystem/info"))
+        .with(query: { path: "/home/user/file.txt" })
+        .to_return(status: 200, body: { "size" => 42 }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(fs.get_file_info("/home/user/file.txt")).to eq({ "size" => 42 })
+    end
+  end
+
+  describe "#search_files" do
+    it "returns the files array" do
+      stub_request(:get, toolbox_url("/filesystem/search"))
+        .with(query: { path: "/home/user", pattern: "*.rb" })
+        .to_return(status: 200, body: { files: ["/home/user/a.rb"] }.to_json,
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(fs.search_files("/home/user", "*.rb")).to eq(["/home/user/a.rb"])
+    end
+  end
+
+  describe "#download_files" do
+    it "downloads each requested file to its local path" do
+      stub_request(:get, toolbox_url("/filesystem/download"))
+        .with(query: { path: "/remote/a.txt" })
+        .to_return(status: 200, body: "AAA")
+
+      Tempfile.create("a") do |tmp|
+        fs.download_files([{ remote_path: "/remote/a.txt", local_path: tmp.path }])
+        expect(File.read(tmp.path)).to eq("AAA")
+      end
+    end
+  end
+
+  describe "#upload_file" do
+    it "uploads an existing local file as multipart" do
+      stub = stub_request(:post, toolbox_url("/filesystem/upload"))
+             .with(query: { path: "/remote/up.txt" },
+                   headers: { "Content-Type" => %r{\Amultipart/form-data} })
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      Tempfile.create("up") do |tmp|
+        tmp.write("data")
+        tmp.flush
+        fs.upload_file(tmp.path, "/remote/up.txt")
+      end
+
+      expect(stub).to have_been_requested
+    end
+
+    it "uploads inline content (non-existent path) as multipart bytes" do
+      stub = stub_request(:post, toolbox_url("/filesystem/upload"))
+             .with(query: { path: "/remote/hello.txt" },
+                   headers: { "Content-Type" => %r{\Amultipart/form-data} })
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      fs.upload_file("Hello, World!", "/remote/hello.txt")
+
+      expect(stub).to have_been_requested
+    end
+  end
+
+  describe "#write_file" do
+    it "uploads the given content to the path" do
+      stub = stub_request(:post, toolbox_url("/filesystem/upload"))
+             .with(query: { path: "/remote/out.txt" })
+             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+
+      fs.write_file("/remote/out.txt", "contents")
+
+      expect(stub).to have_been_requested
+    end
+  end
 end

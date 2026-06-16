@@ -180,15 +180,19 @@ RSpec.describe Daytona::Image do
   end
 
   describe "#run_commands with array form" do
-    # NOTE: documents current behavior. `run_commands` calls `commands.flatten`,
-    # which fully flattens nested arrays, so the intended exec-form branch
-    # (command.is_a?(Array)) is never reached and each token becomes its own RUN
-    # line. See the SDK notes: this looks like a bug worth revisiting.
-    it "currently flattens array arguments into separate RUN lines" do
+    it "treats an array argument as a single quoted exec-form command" do
       image = described_class.base("python:3.12")
                              .run_commands(["bash", "-c", "echo hi"])
 
-      expect(image.dockerfile).to include("RUN bash\nRUN -c\nRUN echo hi\n")
+      expect(image.dockerfile).to include('RUN "bash" "-c" "echo hi"')
+    end
+
+    it "supports mixing shell-form strings and exec-form arrays" do
+      image = described_class.base("python:3.12")
+                             .run_commands("echo hello", ["bash", "-c", "echo again"])
+
+      expect(image.dockerfile).to include("RUN echo hello\n")
+      expect(image.dockerfile).to include('RUN "bash" "-c" "echo again"')
     end
   end
 
