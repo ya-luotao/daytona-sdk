@@ -45,7 +45,9 @@ module Daytona
       def get(path, params: {}, timeout: DEFAULT_TIMEOUT)
         handle_response do
           @connection.get(normalize_path(path)) do |req|
-            req.params = params
+            # Merge rather than overwrite so any query string already embedded in
+            # `path` is preserved (some callers build the query into the path).
+            req.params = req.params.merge(params) if params && !params.empty?
             req.options.timeout = timeout
           end
         end

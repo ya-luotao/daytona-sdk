@@ -320,16 +320,14 @@ RSpec.describe Daytona::API::HttpClient do
   end
 
   describe "#upload_bytes" do
-    it "uploads content with correct headers" do
-      stub_request(:post, "https://api.daytona.io/files/upload")
-        .with(
-          body: "file content here",
-          headers: {
-            "Content-Type" => "text/plain",
-            "Content-Disposition" => 'attachment; filename="test.txt"'
-          }
-        )
-        .to_return(status: 200, body: '{"path": "/uploaded/test.txt"}', headers: { "Content-Type" => "application/json" })
+    # upload_bytes sends multipart/form-data. WebMock cannot match multipart
+    # request bodies, so we assert on the endpoint, verb, and parsed response
+    # rather than the encoded body.
+    it "POSTs as multipart and returns the parsed response" do
+      stub = stub_request(:post, "https://api.daytona.io/files/upload")
+             .with(headers: { "Content-Type" => %r{\Amultipart/form-data} })
+             .to_return(status: 200, body: '{"path": "/uploaded/test.txt"}',
+                        headers: { "Content-Type" => "application/json" })
 
       result = client.upload_bytes(
         "/files/upload",
@@ -339,6 +337,7 @@ RSpec.describe Daytona::API::HttpClient do
       )
 
       expect(result).to eq({ "path" => "/uploaded/test.txt" })
+      expect(stub).to have_been_requested
     end
   end
 end
