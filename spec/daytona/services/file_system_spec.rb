@@ -9,8 +9,8 @@ RSpec.describe Daytona::Services::FileSystem do
   describe "#create_folder" do
     it "POSTs the path and mode" do
       stub = stub_request(:post, toolbox_url("/filesystem/folder"))
-             .with(body: { path: "/home/user/new", mode: "0755" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { path: "/home/user/new", mode: "0755" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       fs.create_folder("/home/user/new")
 
@@ -19,8 +19,8 @@ RSpec.describe Daytona::Services::FileSystem do
 
     it "uses a custom mode when provided" do
       stub = stub_request(:post, toolbox_url("/filesystem/folder"))
-             .with(body: { path: "/home/user/new", mode: "0700" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { path: "/home/user/new", mode: "0700" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       fs.create_folder("/home/user/new", "0700")
 
@@ -31,8 +31,8 @@ RSpec.describe Daytona::Services::FileSystem do
   describe "#delete_file" do
     it "DELETEs without recursive flag by default" do
       stub = stub_request(:delete, toolbox_url("/filesystem"))
-             .with(query: { path: "/home/user/file.txt" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(query: { path: "/home/user/file.txt" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       fs.delete_file("/home/user/file.txt")
 
@@ -41,8 +41,8 @@ RSpec.describe Daytona::Services::FileSystem do
 
     it "includes recursive=true when requested" do
       stub = stub_request(:delete, toolbox_url("/filesystem"))
-             .with(query: { path: "/home/user/dir", recursive: "true" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(query: { path: "/home/user/dir", recursive: "true" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       fs.delete_file("/home/user/dir", recursive: true)
 
@@ -104,8 +104,8 @@ RSpec.describe Daytona::Services::FileSystem do
   describe "#move_files" do
     it "POSTs source and destination" do
       stub = stub_request(:post, toolbox_url("/filesystem/move"))
-             .with(body: { source: "/a.txt", destination: "/b.txt" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { source: "/a.txt", destination: "/b.txt" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       fs.move_files("/a.txt", "/b.txt")
 
@@ -116,8 +116,8 @@ RSpec.describe Daytona::Services::FileSystem do
   describe "#replace_in_files" do
     it "POSTs files, pattern and newValue" do
       stub = stub_request(:post, toolbox_url("/filesystem/replace"))
-             .with(body: { files: ["/a.txt"], pattern: "old", newValue: "new" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { files: ["/a.txt"], pattern: "old", newValue: "new" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       fs.replace_in_files(["/a.txt"], "old", "new")
 
@@ -128,8 +128,8 @@ RSpec.describe Daytona::Services::FileSystem do
   describe "#set_file_permissions" do
     it "only includes provided fields" do
       stub = stub_request(:post, toolbox_url("/filesystem/permissions"))
-             .with(body: { path: "/script.sh", mode: "0755" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { path: "/script.sh", mode: "0755" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       fs.set_file_permissions("/script.sh", mode: "0755")
 
@@ -185,9 +185,9 @@ RSpec.describe Daytona::Services::FileSystem do
   describe "#upload_file" do
     it "uploads an existing local file as multipart" do
       stub = stub_request(:post, toolbox_url("/filesystem/upload"))
-             .with(query: { path: "/remote/up.txt" },
-                   headers: { "Content-Type" => %r{\Amultipart/form-data} })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(query: { path: "/remote/up.txt" },
+              headers: { "Content-Type" => %r{\Amultipart/form-data} })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       Tempfile.create("up") do |tmp|
         tmp.write("data")
@@ -200,9 +200,9 @@ RSpec.describe Daytona::Services::FileSystem do
 
     it "uploads inline content (non-existent path) as multipart bytes" do
       stub = stub_request(:post, toolbox_url("/filesystem/upload"))
-             .with(query: { path: "/remote/hello.txt" },
-                   headers: { "Content-Type" => %r{\Amultipart/form-data} })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(query: { path: "/remote/hello.txt" },
+              headers: { "Content-Type" => %r{\Amultipart/form-data} })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       fs.upload_file("Hello, World!", "/remote/hello.txt")
 
@@ -213,8 +213,8 @@ RSpec.describe Daytona::Services::FileSystem do
   describe "#write_file" do
     it "uploads the given content to the path" do
       stub = stub_request(:post, toolbox_url("/filesystem/upload"))
-             .with(query: { path: "/remote/out.txt" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(query: { path: "/remote/out.txt" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       fs.write_file("/remote/out.txt", "contents")
 

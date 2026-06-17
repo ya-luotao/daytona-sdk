@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require "simplecov"
-SimpleCov.start do
-  add_filter "/spec/"
-  # Guard against coverage regressions. Ratchet this up as coverage improves.
-  minimum_coverage 92
-end if ENV["COVERAGE"]
+if ENV["COVERAGE"]
+  SimpleCov.start do
+    add_filter "/spec/"
+    # Guard against coverage regressions. Ratchet this up as coverage improves.
+    minimum_coverage 92
+  end
+end
 
 require "daytona"
 require "webmock/rspec"

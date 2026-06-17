@@ -47,13 +47,13 @@ RSpec.describe Daytona::Services::Git do
 
     it "includes optional auth, branch and commit fields" do
       stub = stub_post("/git/clone", {
-        url: "https://example.com/r.git",
-        path: "/repo",
-        branch: "dev",
-        commitId: "abc123",
-        username: "user",
-        password: "token",
-      })
+                         url: "https://example.com/r.git",
+                         path: "/repo",
+                         branch: "dev",
+                         commitId: "abc123",
+                         username: "user",
+                         password: "token",
+                       })
 
       git.clone("https://example.com/r.git", "/repo",
                 branch: "dev", commit_id: "abc123", username: "user", password: "token")
@@ -65,8 +65,8 @@ RSpec.describe Daytona::Services::Git do
   describe "#commit" do
     it "POSTs commit metadata with allowEmpty" do
       stub = stub_post("/git/commit", {
-        path: "/repo", message: "msg", author: "Me", email: "me@x.com", allowEmpty: false
-      })
+                         path: "/repo", message: "msg", author: "Me", email: "me@x.com", allowEmpty: false,
+                       })
 
       git.commit("/repo", "msg", "Me", "me@x.com")
 

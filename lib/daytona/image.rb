@@ -141,7 +141,8 @@ module Daytona
     # @example
     #   image = Daytona::Image.debian_slim("3.12")
     #     .pip_install_from_requirements("requirements.txt")
-    def pip_install_from_requirements(requirements_txt, find_links: nil, index_url: nil, extra_index_urls: nil, pre: false, extra_options: "")
+    def pip_install_from_requirements(requirements_txt, find_links: nil, index_url: nil, extra_index_urls: nil,
+                                      pre: false, extra_options: "")
       requirements_txt = File.expand_path(requirements_txt)
       raise DaytonaError, "Requirements file not found: #{requirements_txt}" unless File.exist?(requirements_txt)
 
@@ -212,7 +213,7 @@ module Daytona
       commands.each do |command|
         if command.is_a?(Array)
           escaped = command.map { |c| "\"#{c.gsub('"', '\\"')}\"" }
-          @dockerfile += "RUN #{escaped.join(' ')}\n"
+          @dockerfile += "RUN #{escaped.join(" ")}\n"
         else
           @dockerfile += "RUN #{command}\n"
         end
@@ -307,13 +308,9 @@ module Daytona
       }
     end
 
-    private
-
-    def self.process_python_version(python_version)
-      if python_version.nil?
-        # Match local Ruby version... but we're using Python, so default to 3.12
-        python_version = "3.12"
-      end
+    private_class_method def self.process_python_version(python_version)
+      # Default to a supported series when no version is given
+      python_version = "3.12" if python_version.nil?
 
       series = python_version.split(".")[0..1].join(".")
 
@@ -329,25 +326,23 @@ module Daytona
       LATEST_PYTHON_MICRO_VERSIONS[series]
     end
 
+    private
+
     def flatten_args(args)
-      args.flatten.select { |a| a.is_a?(String) }
+      args.flatten.grep(String)
     end
 
     def format_pip_install_args(find_links: nil, index_url: nil, extra_index_urls: nil, pre: false, extra_options: "")
       extra_args = ""
 
-      if find_links
-        find_links.each do |link|
-          extra_args += " --find-links #{Shellwords.escape(link)}"
-        end
+      find_links&.each do |link|
+        extra_args += " --find-links #{Shellwords.escape(link)}"
       end
 
       extra_args += " --index-url #{Shellwords.escape(index_url)}" if index_url
 
-      if extra_index_urls
-        extra_index_urls.each do |url|
-          extra_args += " --extra-index-url #{Shellwords.escape(url)}"
-        end
+      extra_index_urls&.each do |url|
+        extra_args += " --extra-index-url #{Shellwords.escape(url)}"
       end
 
       extra_args += " --pre" if pre

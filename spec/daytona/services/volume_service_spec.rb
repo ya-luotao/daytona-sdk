@@ -55,7 +55,7 @@ RSpec.describe Daytona::Services::VolumeService do
   describe "#delete" do
     it "DELETEs the volume by id" do
       stub = stub_request(:delete, volumes_url("/v1"))
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       service.delete("v1")
 
@@ -77,9 +77,9 @@ RSpec.describe Daytona::Services::VolumeService do
         .to_return(status: 200, body: { items: [] }.to_json,
                    headers: { "Content-Type" => "application/json" })
       create_stub = stub_request(:post, volumes_url)
-                    .with(body: { name: "fresh" })
-                    .to_return(status: 200, body: { "id" => "v9", "name" => "fresh" }.to_json,
-                               headers: { "Content-Type" => "application/json" })
+        .with(body: { name: "fresh" })
+        .to_return(status: 200, body: { "id" => "v9", "name" => "fresh" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
 
       expect(service.get_or_create("fresh").id).to eq("v9")
       expect(create_stub).to have_been_requested

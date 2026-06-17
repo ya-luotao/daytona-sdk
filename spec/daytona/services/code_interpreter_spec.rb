@@ -17,8 +17,8 @@ RSpec.describe Daytona::Services::CodeInterpreter do
 
     it "includes contextId, envs and timeout when provided" do
       stub = stub_request(:post, toolbox_url("/interpreter/execute"))
-             .with(body: { code: "x=1", contextId: "ctx-1", envs: { "A" => "b" }, timeout: 10 })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { code: "x=1", contextId: "ctx-1", envs: { "A" => "b" }, timeout: 10 })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       interpreter.run_code("x=1", context: "ctx-1", envs: { "A" => "b" }, timeout: 10)
 
@@ -40,9 +40,9 @@ RSpec.describe Daytona::Services::CodeInterpreter do
   describe "context management" do
     it "create_context POSTs cwd when given" do
       stub = stub_request(:post, toolbox_url("/interpreter/contexts"))
-             .with(body: { cwd: "/home/user" })
-             .to_return(status: 200, body: { "id" => "ctx-1" }.to_json,
-                        headers: { "Content-Type" => "application/json" })
+        .with(body: { cwd: "/home/user" })
+        .to_return(status: 200, body: { "id" => "ctx-1" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
 
       expect(interpreter.create_context(cwd: "/home/user")).to eq({ "id" => "ctx-1" })
       expect(stub).to have_been_requested
@@ -58,7 +58,7 @@ RSpec.describe Daytona::Services::CodeInterpreter do
 
     it "delete_context DELETEs by id" do
       stub = stub_request(:delete, toolbox_url("/interpreter/contexts/ctx-1"))
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       interpreter.delete_context("ctx-1")
 

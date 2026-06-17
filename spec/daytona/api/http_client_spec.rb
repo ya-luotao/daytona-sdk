@@ -22,7 +22,8 @@ RSpec.describe Daytona::API::HttpClient do
       it "makes a GET request and returns parsed JSON" do
         stub_request(:get, "https://api.daytona.io/sandbox/123")
           .with(headers: { "Authorization" => "Bearer #{api_key}" })
-          .to_return(status: 200, body: '{"id": "123", "name": "test"}', headers: { "Content-Type" => "application/json" })
+          .to_return(status: 200, body: '{"id": "123", "name": "test"}',
+                     headers: { "Content-Type" => "application/json" })
 
         result = client.get("/sandbox/123")
 
@@ -32,7 +33,7 @@ RSpec.describe Daytona::API::HttpClient do
       it "includes query parameters" do
         stub_request(:get, "https://api.daytona.io/sandbox")
           .with(query: { "page" => "1", "limit" => "10" })
-          .to_return(status: 200, body: '[]', headers: { "Content-Type" => "application/json" })
+          .to_return(status: 200, body: "[]", headers: { "Content-Type" => "application/json" })
 
         client.get("/sandbox", params: { page: 1, limit: 10 })
 
@@ -69,7 +70,8 @@ RSpec.describe Daytona::API::HttpClient do
       it "makes a PUT request with JSON body" do
         stub_request(:put, "https://api.daytona.io/sandbox/123/labels")
           .with(body: '{"labels":{"env":"prod"}}')
-          .to_return(status: 200, body: '{"labels": {"env": "prod"}}', headers: { "Content-Type" => "application/json" })
+          .to_return(status: 200, body: '{"labels": {"env": "prod"}}',
+                     headers: { "Content-Type" => "application/json" })
 
         result = client.put("/sandbox/123/labels", body: { labels: { env: "prod" } })
 
@@ -104,7 +106,7 @@ RSpec.describe Daytona::API::HttpClient do
   describe "path normalization" do
     it "handles paths with leading slash" do
       stub_request(:get, "https://api.daytona.io/sandbox/123")
-        .to_return(status: 200, body: '{}', headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       client.get("/sandbox/123")
 
@@ -113,7 +115,7 @@ RSpec.describe Daytona::API::HttpClient do
 
     it "handles paths without leading slash" do
       stub_request(:get, "https://api.daytona.io/sandbox/123")
-        .to_return(status: 200, body: '{}', headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       client.get("sandbox/123")
 
@@ -122,7 +124,7 @@ RSpec.describe Daytona::API::HttpClient do
 
     it "handles paths with multiple leading slashes" do
       stub_request(:get, "https://api.daytona.io/sandbox/123")
-        .to_return(status: 200, body: '{}', headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       client.get("///sandbox/123")
 
@@ -154,7 +156,8 @@ RSpec.describe Daytona::API::HttpClient do
 
     it "raises NotFoundError on 404" do
       stub_request(:get, "https://api.daytona.io/sandbox/unknown")
-        .to_return(status: 404, body: '{"message": "Sandbox not found"}', headers: { "Content-Type" => "application/json" })
+        .to_return(status: 404, body: '{"message": "Sandbox not found"}',
+                   headers: { "Content-Type" => "application/json" })
 
       expect { client.get("/sandbox/unknown") }
         .to raise_error(Daytona::NotFoundError) do |error|
@@ -180,7 +183,8 @@ RSpec.describe Daytona::API::HttpClient do
 
     it "raises DaytonaError on 500" do
       stub_request(:get, "https://api.daytona.io/sandbox")
-        .to_return(status: 500, body: '{"error": "Internal server error"}', headers: { "Content-Type" => "application/json" })
+        .to_return(status: 500, body: '{"error": "Internal server error"}',
+                   headers: { "Content-Type" => "application/json" })
 
       expect { client.get("/sandbox") }
         .to raise_error(Daytona::DaytonaError) do |error|
@@ -206,7 +210,8 @@ RSpec.describe Daytona::API::HttpClient do
 
     it "extracts error message from 'error' field" do
       stub_request(:get, "https://api.daytona.io/sandbox/123")
-        .to_return(status: 400, body: '{"error": "Bad request format"}', headers: { "Content-Type" => "application/json" })
+        .to_return(status: 400, body: '{"error": "Bad request format"}',
+                   headers: { "Content-Type" => "application/json" })
 
       expect { client.get("/sandbox/123") }
         .to raise_error(Daytona::DaytonaError, "Bad request format")
@@ -225,7 +230,7 @@ RSpec.describe Daytona::API::HttpClient do
     it "uses API key for Bearer token" do
       stub_request(:get, "https://api.daytona.io/sandbox")
         .with(headers: { "Authorization" => "Bearer test-api-key" })
-        .to_return(status: 200, body: '[]', headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "[]", headers: { "Content-Type" => "application/json" })
 
       client.get("/sandbox")
 
@@ -242,10 +247,10 @@ RSpec.describe Daytona::API::HttpClient do
 
       stub_request(:get, "https://api.daytona.io/sandbox")
         .with(headers: {
-          "Authorization" => "Bearer jwt-token-123",
-          "X-Daytona-Organization-ID" => "org-456"
-        })
-        .to_return(status: 200, body: '[]', headers: { "Content-Type" => "application/json" })
+                "Authorization" => "Bearer jwt-token-123",
+                "X-Daytona-Organization-ID" => "org-456",
+              })
+        .to_return(status: 200, body: "[]", headers: { "Content-Type" => "application/json" })
 
       jwt_client.get("/sandbox")
 
@@ -256,10 +261,10 @@ RSpec.describe Daytona::API::HttpClient do
     it "includes SDK headers" do
       stub_request(:get, "https://api.daytona.io/sandbox")
         .with(headers: {
-          "X-Daytona-Source" => "ruby-sdk",
-          "X-Daytona-SDK-Version" => Daytona::VERSION
-        })
-        .to_return(status: 200, body: '[]', headers: { "Content-Type" => "application/json" })
+                "X-Daytona-Source" => "ruby-sdk",
+                "X-Daytona-SDK-Version" => Daytona::VERSION,
+              })
+        .to_return(status: 200, body: "[]", headers: { "Content-Type" => "application/json" })
 
       client.get("/sandbox")
 
@@ -271,7 +276,8 @@ RSpec.describe Daytona::API::HttpClient do
   describe "response parsing" do
     it "parses JSON response" do
       stub_request(:get, "https://api.daytona.io/sandbox/123")
-        .to_return(status: 200, body: '{"id": "123", "nested": {"key": "value"}}', headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: '{"id": "123", "nested": {"key": "value"}}',
+                   headers: { "Content-Type" => "application/json" })
 
       result = client.get("/sandbox/123")
 
@@ -312,7 +318,8 @@ RSpec.describe Daytona::API::HttpClient do
 
     it "raises error on download failure" do
       stub_request(:get, "https://api.daytona.io/files/missing.txt")
-        .to_return(status: 404, body: '{"message": "File not found"}', headers: { "Content-Type" => "application/json" })
+        .to_return(status: 404, body: '{"message": "File not found"}',
+                   headers: { "Content-Type" => "application/json" })
 
       expect { client.download_file("/files/missing.txt") }
         .to raise_error(Daytona::NotFoundError)
@@ -325,9 +332,9 @@ RSpec.describe Daytona::API::HttpClient do
     # rather than the encoded body.
     it "POSTs as multipart and returns the parsed response" do
       stub = stub_request(:post, "https://api.daytona.io/files/upload")
-             .with(headers: { "Content-Type" => %r{\Amultipart/form-data} })
-             .to_return(status: 200, body: '{"path": "/uploaded/test.txt"}',
-                        headers: { "Content-Type" => "application/json" })
+        .with(headers: { "Content-Type" => %r{\Amultipart/form-data} })
+        .to_return(status: 200, body: '{"path": "/uploaded/test.txt"}',
+                   headers: { "Content-Type" => "application/json" })
 
       result = client.upload_bytes(
         "/files/upload",

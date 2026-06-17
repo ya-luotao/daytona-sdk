@@ -76,12 +76,12 @@ module Daytona
       #   sandbox.git.commit("/home/user/repo", "Fix bug", "User", "user@example.com")
       def commit(path, message, author, email, allow_empty: false)
         toolbox_post("/git/commit", body: {
-          path: path,
-          message: message,
-          author: author,
-          email: email,
-          allowEmpty: allow_empty,
-        })
+                       path: path,
+                       message: message,
+                       author: author,
+                       email: email,
+                       allowEmpty: allow_empty,
+                     })
       end
 
       # Initialize a new repository

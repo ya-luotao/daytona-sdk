@@ -3,6 +3,14 @@
 require "spec_helper"
 
 RSpec.describe Daytona::Sandbox do
+  subject(:sandbox) do
+    described_class.new(
+      sandbox_data: sandbox_data,
+      http_client: http_client,
+      get_toolbox_url: -> { "#{api_url}/toolbox" }
+    )
+  end
+
   let(:api_url) { "https://api.daytona.io" }
   let(:http_client) { Daytona::API::HttpClient.new(base_url: api_url, api_key: "test-api-key") }
   let(:sandbox_data) do
@@ -14,14 +22,6 @@ RSpec.describe Daytona::Sandbox do
       "autoStopInterval" => 15,
       "labels" => { "env" => "dev" },
     }
-  end
-
-  subject(:sandbox) do
-    described_class.new(
-      sandbox_data: sandbox_data,
-      http_client: http_client,
-      get_toolbox_url: -> { "#{api_url}/toolbox" }
-    )
   end
 
   def sandbox_url(path = "")
@@ -72,7 +72,7 @@ RSpec.describe Daytona::Sandbox do
   describe "#start" do
     it "POSTs start and refreshes state" do
       start_stub = stub_request(:post, sandbox_url("/sb-1/start"))
-                   .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
       stub_request(:get, sandbox_url("/sb-1"))
         .to_return(status: 200, body: { id: "sb-1", state: "started" }.to_json,
                    headers: { "Content-Type" => "application/json" })
@@ -170,9 +170,9 @@ RSpec.describe Daytona::Sandbox do
   describe "SSH access" do
     it "create_ssh_access POSTs the expiry" do
       stub = stub_request(:post, sandbox_url("/sb-1/ssh-access"))
-             .with(body: { expiresInMinutes: 60 })
-             .to_return(status: 200, body: { token: "abc" }.to_json,
-                        headers: { "Content-Type" => "application/json" })
+        .with(body: { expiresInMinutes: 60 })
+        .to_return(status: 200, body: { token: "abc" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
 
       sandbox.create_ssh_access(expires_in_minutes: 60)
 
@@ -181,7 +181,7 @@ RSpec.describe Daytona::Sandbox do
 
     it "revoke_ssh_access DELETEs the token" do
       stub = stub_request(:delete, sandbox_url("/sb-1/ssh-access/abc"))
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       sandbox.revoke_ssh_access("abc")
 
@@ -190,9 +190,9 @@ RSpec.describe Daytona::Sandbox do
 
     it "validate_ssh_access POSTs the token" do
       stub = stub_request(:post, "#{api_url}/sandbox/ssh-access/validate")
-             .with(body: { token: "abc" })
-             .to_return(status: 200, body: { valid: true }.to_json,
-                        headers: { "Content-Type" => "application/json" })
+        .with(body: { token: "abc" })
+        .to_return(status: 200, body: { valid: true }.to_json,
+                   headers: { "Content-Type" => "application/json" })
 
       expect(sandbox.validate_ssh_access("abc")).to eq({ "valid" => true })
       expect(stub).to have_been_requested
@@ -202,7 +202,7 @@ RSpec.describe Daytona::Sandbox do
   describe "#stop" do
     it "POSTs stop and waits for the stopped state" do
       stop_stub = stub_request(:post, sandbox_url("/sb-1/stop"))
-                  .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
       stub_request(:get, sandbox_url("/sb-1"))
         .to_return(status: 200, body: { id: "sb-1", state: "stopped" }.to_json,
                    headers: { "Content-Type" => "application/json" })
@@ -217,7 +217,7 @@ RSpec.describe Daytona::Sandbox do
   describe "#archive" do
     it "POSTs archive and refreshes" do
       archive_stub = stub_request(:post, sandbox_url("/sb-1/archive"))
-                     .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
       stub_request(:get, sandbox_url("/sb-1"))
         .to_return(status: 200, body: { id: "sb-1", state: "archived" }.to_json,
                    headers: { "Content-Type" => "application/json" })
@@ -232,7 +232,7 @@ RSpec.describe Daytona::Sandbox do
   describe "#recover" do
     it "POSTs recover and waits for start" do
       recover_stub = stub_request(:post, sandbox_url("/sb-1/recover"))
-                     .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
       stub_request(:get, sandbox_url("/sb-1"))
         .to_return(status: 200, body: { id: "sb-1", state: "started" }.to_json,
                    headers: { "Content-Type" => "application/json" })
@@ -282,7 +282,7 @@ RSpec.describe Daytona::Sandbox do
   describe "#refresh_activity" do
     it "POSTs to the activity endpoint" do
       stub = stub_request(:post, sandbox_url("/sb-1/activity"))
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       sandbox.refresh_activity
 

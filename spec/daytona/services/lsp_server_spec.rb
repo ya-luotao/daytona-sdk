@@ -3,9 +3,6 @@
 require "spec_helper"
 
 RSpec.describe Daytona::Services::LspServer do
-  let(:api_url) { ToolboxHelpers::API_URL }
-  let(:sandbox_id) { ToolboxHelpers::SANDBOX_ID }
-
   subject(:lsp) do
     described_class.new(
       language_id: "python",
@@ -16,6 +13,9 @@ RSpec.describe Daytona::Services::LspServer do
     )
   end
 
+  let(:api_url) { ToolboxHelpers::API_URL }
+  let(:sandbox_id) { ToolboxHelpers::SANDBOX_ID }
+
   # LspServer builds its toolbox URL as: proc result + "/" + sandbox_id
   def lsp_url(path)
     "#{api_url}/toolbox/#{sandbox_id}#{path}"
@@ -24,8 +24,8 @@ RSpec.describe Daytona::Services::LspServer do
   describe "#did_open" do
     it "POSTs the path, languageId and content" do
       stub = stub_request(:post, lsp_url("/lsp/did-open"))
-             .with(body: { path: "/p/main.py", languageId: "python", content: "x=1" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { path: "/p/main.py", languageId: "python", content: "x=1" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       lsp.did_open("/p/main.py", "python", "x=1")
 
@@ -87,8 +87,8 @@ RSpec.describe Daytona::Services::LspServer do
   describe "#did_close" do
     it "POSTs the path" do
       stub = stub_request(:post, lsp_url("/lsp/did-close"))
-             .with(body: { path: "/p/main.py" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { path: "/p/main.py" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       lsp.did_close("/p/main.py")
 
@@ -99,8 +99,8 @@ RSpec.describe Daytona::Services::LspServer do
   describe "#did_change" do
     it "POSTs the path and new content" do
       stub = stub_request(:post, lsp_url("/lsp/did-change"))
-             .with(body: { path: "/p/main.py", content: "x=2" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { path: "/p/main.py", content: "x=2" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       lsp.did_change("/p/main.py", "x=2")
 

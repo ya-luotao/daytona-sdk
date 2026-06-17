@@ -8,7 +8,7 @@ RSpec.describe Daytona::Services::ComputerUse do
   describe "lifecycle" do
     it "start POSTs to the start endpoint" do
       stub = stub_request(:post, toolbox_url("/computer-use/start"))
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       computer.start
 
@@ -27,8 +27,8 @@ RSpec.describe Daytona::Services::ComputerUse do
   describe "mouse" do
     it "move POSTs coordinates" do
       stub = stub_request(:post, toolbox_url("/computer-use/mouse/move"))
-             .with(body: { x: 10, y: 20 })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { x: 10, y: 20 })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       computer.mouse.move(10, 20)
 
@@ -37,8 +37,8 @@ RSpec.describe Daytona::Services::ComputerUse do
 
     it "click POSTs button and double flag" do
       stub = stub_request(:post, toolbox_url("/computer-use/mouse/click"))
-             .with(body: { x: 5, y: 6, button: "left", double: false })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { x: 5, y: 6, button: "left", double: false })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       computer.mouse.click(5, 6)
 
@@ -47,8 +47,8 @@ RSpec.describe Daytona::Services::ComputerUse do
 
     it "double_click sets double: true" do
       stub = stub_request(:post, toolbox_url("/computer-use/mouse/click"))
-             .with(body: { x: 5, y: 6, button: "left", double: true })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { x: 5, y: 6, button: "left", double: true })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       computer.mouse.double_click(5, 6)
 
@@ -57,8 +57,8 @@ RSpec.describe Daytona::Services::ComputerUse do
 
     it "drag POSTs start and end coordinates" do
       stub = stub_request(:post, toolbox_url("/computer-use/mouse/drag"))
-             .with(body: { startX: 1, startY: 2, endX: 3, endY: 4, button: "left" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { startX: 1, startY: 2, endX: 3, endY: 4, button: "left" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       computer.mouse.drag(1, 2, 3, 4)
 
@@ -69,8 +69,8 @@ RSpec.describe Daytona::Services::ComputerUse do
   describe "keyboard" do
     it "type omits delay when not given" do
       stub = stub_request(:post, toolbox_url("/computer-use/keyboard/type"))
-             .with(body: { text: "hi" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { text: "hi" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       computer.keyboard.type("hi")
 
@@ -79,8 +79,8 @@ RSpec.describe Daytona::Services::ComputerUse do
 
     it "press includes modifiers" do
       stub = stub_request(:post, toolbox_url("/computer-use/keyboard/press"))
-             .with(body: { key: "a", modifiers: ["ctrl"] })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { key: "a", modifiers: ["ctrl"] })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       computer.keyboard.press("a", modifiers: ["ctrl"])
 
@@ -118,7 +118,7 @@ RSpec.describe Daytona::Services::ComputerUse do
 
     it "focus_window POSTs to the focus endpoint" do
       stub = stub_request(:post, toolbox_url("/computer-use/display/windows/w1/focus"))
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       computer.display.focus_window("w1")
 
@@ -129,7 +129,7 @@ RSpec.describe Daytona::Services::ComputerUse do
   describe "process management" do
     it "stop POSTs to the stop endpoint" do
       stub = stub_request(:post, toolbox_url("/computer-use/stop"))
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       computer.stop
 
@@ -146,7 +146,7 @@ RSpec.describe Daytona::Services::ComputerUse do
 
     it "restart_process POSTs to the restart endpoint" do
       stub = stub_request(:post, toolbox_url("/computer-use/processes/xvfb/restart"))
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       computer.restart_process("xvfb")
 
@@ -165,8 +165,8 @@ RSpec.describe Daytona::Services::ComputerUse do
 
     it "mouse scroll POSTs direction and amount" do
       stub = stub_request(:post, toolbox_url("/computer-use/mouse/scroll"))
-             .with(body: { x: 1, y: 2, direction: "down", amount: 3 })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { x: 1, y: 2, direction: "down", amount: 3 })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       computer.mouse.scroll(1, 2, "down", amount: 3)
 
@@ -175,8 +175,8 @@ RSpec.describe Daytona::Services::ComputerUse do
 
     it "keyboard hotkey POSTs the key combination" do
       stub = stub_request(:post, toolbox_url("/computer-use/keyboard/hotkey"))
-             .with(body: { keys: %w[ctrl c] })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { keys: %w[ctrl c] })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       computer.keyboard.hotkey(%w[ctrl c])
 
@@ -185,9 +185,9 @@ RSpec.describe Daytona::Services::ComputerUse do
 
     it "screenshot take_region POSTs the region" do
       stub = stub_request(:post, toolbox_url("/computer-use/screenshot/region"))
-             .with(body: { region: { x: 0, y: 0, width: 10, height: 10 }, showCursor: false })
-             .to_return(status: 200, body: { "data" => "x" }.to_json,
-                        headers: { "Content-Type" => "application/json" })
+        .with(body: { region: { x: 0, y: 0, width: 10, height: 10 }, showCursor: false })
+        .to_return(status: 200, body: { "data" => "x" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
 
       computer.screenshot.take_region({ x: 0, y: 0, width: 10, height: 10 })
 

@@ -32,28 +32,28 @@ RSpec.describe Daytona::Image do
   describe "#pip_install" do
     it "adds pip install command" do
       image = described_class.base("python:3.12")
-                             .pip_install("numpy", "pandas")
+        .pip_install("numpy", "pandas")
 
       expect(image.dockerfile).to include("RUN python -m pip install numpy pandas")
     end
 
     it "sorts packages" do
       image = described_class.base("python:3.12")
-                             .pip_install("zlib", "aiohttp")
+        .pip_install("zlib", "aiohttp")
 
       expect(image.dockerfile).to include("pip install aiohttp zlib")
     end
 
     it "supports index_url" do
       image = described_class.base("python:3.12")
-                             .pip_install("torch", index_url: "https://download.pytorch.org/whl/cpu")
+        .pip_install("torch", index_url: "https://download.pytorch.org/whl/cpu")
 
       expect(image.dockerfile).to include("--index-url")
     end
 
     it "supports pre flag" do
       image = described_class.base("python:3.12")
-                             .pip_install("mypackage", pre: true)
+        .pip_install("mypackage", pre: true)
 
       expect(image.dockerfile).to include("--pre")
     end
@@ -68,7 +68,7 @@ RSpec.describe Daytona::Image do
   describe "#env" do
     it "adds environment variables" do
       image = described_class.base("python:3.12")
-                             .env("MY_VAR" => "value", "OTHER" => "thing")
+        .env("MY_VAR" => "value", "OTHER" => "thing")
 
       expect(image.dockerfile).to include("ENV MY_VAR=value")
       expect(image.dockerfile).to include("ENV OTHER=thing")
@@ -84,7 +84,7 @@ RSpec.describe Daytona::Image do
   describe "#workdir" do
     it "adds WORKDIR command" do
       image = described_class.base("python:3.12")
-                             .workdir("/home/user")
+        .workdir("/home/user")
 
       expect(image.dockerfile).to include("WORKDIR /home/user")
     end
@@ -93,7 +93,7 @@ RSpec.describe Daytona::Image do
   describe "#run_commands" do
     it "adds RUN commands" do
       image = described_class.base("python:3.12")
-                             .run_commands("echo hello", "ls -la")
+        .run_commands("echo hello", "ls -la")
 
       expect(image.dockerfile).to include("RUN echo hello")
       expect(image.dockerfile).to include("RUN ls -la")
@@ -103,7 +103,7 @@ RSpec.describe Daytona::Image do
   describe "#entrypoint" do
     it "adds ENTRYPOINT command" do
       image = described_class.base("python:3.12")
-                             .entrypoint(["/bin/bash", "-c"])
+        .entrypoint(["/bin/bash", "-c"])
 
       expect(image.dockerfile).to include('ENTRYPOINT ["/bin/bash", "-c"]')
     end
@@ -118,7 +118,7 @@ RSpec.describe Daytona::Image do
   describe "#cmd" do
     it "adds CMD command" do
       image = described_class.base("python:3.12")
-                             .cmd(["python", "app.py"])
+        .cmd(["python", "app.py"])
 
       expect(image.dockerfile).to include('CMD ["python", "app.py"]')
     end
@@ -127,11 +127,11 @@ RSpec.describe Daytona::Image do
   describe "chaining" do
     it "allows method chaining" do
       image = described_class.debian_slim("3.12")
-                             .pip_install("flask", "gunicorn")
-                             .env("PORT" => "8080")
-                             .workdir("/app")
-                             .run_commands("mkdir -p /app/data")
-                             .cmd(["gunicorn", "app:app"])
+        .pip_install("flask", "gunicorn")
+        .env("PORT" => "8080")
+        .workdir("/app")
+        .run_commands("mkdir -p /app/data")
+        .cmd(["gunicorn", "app:app"])
 
       dockerfile = image.dockerfile
       expect(dockerfile).to include("FROM python:")
@@ -163,10 +163,10 @@ RSpec.describe Daytona::Image do
   describe "#pip_install extra options" do
     it "appends find_links and extra_index_url flags" do
       image = described_class.base("python:3.12")
-                             .pip_install("pkg",
-                                          find_links: ["https://links.example"],
-                                          extra_index_urls: ["https://extra.example"],
-                                          extra_options: "--no-cache-dir")
+        .pip_install("pkg",
+                     find_links: ["https://links.example"],
+                     extra_index_urls: ["https://extra.example"],
+                     extra_options: "--no-cache-dir")
 
       expect(image.dockerfile).to include("--find-links https://links.example")
       expect(image.dockerfile).to include("--extra-index-url https://extra.example")
@@ -182,14 +182,14 @@ RSpec.describe Daytona::Image do
   describe "#run_commands with array form" do
     it "treats an array argument as a single quoted exec-form command" do
       image = described_class.base("python:3.12")
-                             .run_commands(["bash", "-c", "echo hi"])
+        .run_commands(["bash", "-c", "echo hi"])
 
       expect(image.dockerfile).to include('RUN "bash" "-c" "echo hi"')
     end
 
     it "supports mixing shell-form strings and exec-form arrays" do
       image = described_class.base("python:3.12")
-                             .run_commands("echo hello", ["bash", "-c", "echo again"])
+        .run_commands("echo hello", ["bash", "-c", "echo again"])
 
       expect(image.dockerfile).to include("RUN echo hello\n")
       expect(image.dockerfile).to include('RUN "bash" "-c" "echo again"')
@@ -200,7 +200,7 @@ RSpec.describe Daytona::Image do
     it "records a context entry and emits a COPY directive" do
       Tempfile.create("local") do |tmp|
         image = described_class.base("python:3.12")
-                               .add_local_file(tmp.path, "/app/config.json")
+          .add_local_file(tmp.path, "/app/config.json")
 
         expect(image.dockerfile).to match(%r{COPY context/\h+/.+ /app/config.json})
         expect(image.context_list.size).to eq(1)
@@ -212,7 +212,7 @@ RSpec.describe Daytona::Image do
   describe "#dockerfile_commands" do
     it "appends raw commands" do
       image = described_class.base("python:3.12")
-                             .dockerfile_commands(["EXPOSE 8080", "USER app"])
+        .dockerfile_commands(["EXPOSE 8080", "USER app"])
 
       expect(image.dockerfile).to include("EXPOSE 8080\nUSER app\n")
     end
@@ -220,7 +220,7 @@ RSpec.describe Daytona::Image do
     it "raises when the context directory is missing" do
       expect do
         described_class.base("python:3.12")
-                       .dockerfile_commands(["COPY . ."], context_dir: "/no/such/dir")
+          .dockerfile_commands(["COPY . ."], context_dir: "/no/such/dir")
       end.to raise_error(Daytona::DaytonaError, /Context directory not found/)
     end
   end

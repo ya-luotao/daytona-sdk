@@ -9,7 +9,8 @@ Gem::Specification.new do |spec|
   spec.email = ["luotao@example.com"]
 
   spec.summary = "Ruby SDK for Daytona (Unofficial)"
-  spec.description = "Unofficial Ruby SDK for interacting with Daytona sandboxes - cloud development environments. Not affiliated with Daytona Platforms Inc."
+  spec.description = "Unofficial Ruby SDK for interacting with Daytona sandboxes - cloud development " \
+                     "environments. Not affiliated with Daytona Platforms Inc."
   spec.homepage = "https://github.com/ya-luotao/daytona-sdk"
   spec.license = "Apache-2.0"
   spec.required_ruby_version = ">= 3.1.0"
@@ -28,10 +29,10 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   # Runtime dependencies
+  spec.add_dependency "dotenv", "~> 3.0"
   spec.add_dependency "faraday", "~> 2.0"
   spec.add_dependency "faraday-multipart", "~> 1.0"
   spec.add_dependency "websocket-client-simple", "~> 0.8"
-  spec.add_dependency "dotenv", "~> 3.0"
 
   # Development dependencies are in Gemfile
 end

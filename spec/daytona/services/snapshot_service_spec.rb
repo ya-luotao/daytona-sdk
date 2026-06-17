@@ -48,9 +48,9 @@ RSpec.describe Daytona::Services::SnapshotService do
   describe "#create" do
     it "wraps a string image in a Dockerfile FROM directive" do
       stub = stub_request(:post, snapshots_url)
-             .with(body: { name: "py", buildInfo: { dockerfileContent: "FROM python:3.12-slim\n" } })
-             .to_return(status: 200, body: { "id" => "snap-1" }.to_json,
-                        headers: { "Content-Type" => "application/json" })
+        .with(body: { name: "py", buildInfo: { dockerfileContent: "FROM python:3.12-slim\n" } })
+        .to_return(status: 200, body: { "id" => "snap-1" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
 
       service.create("python:3.12-slim", name: "py")
 
@@ -61,9 +61,9 @@ RSpec.describe Daytona::Services::SnapshotService do
       image = Daytona::Image.debian_slim("3.12")
 
       stub = stub_request(:post, snapshots_url)
-             .with(body: { buildInfo: { dockerfileContent: image.dockerfile } })
-             .to_return(status: 200, body: { "id" => "snap-2" }.to_json,
-                        headers: { "Content-Type" => "application/json" })
+        .with(body: { buildInfo: { dockerfileContent: image.dockerfile } })
+        .to_return(status: 200, body: { "id" => "snap-2" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
 
       service.create(image)
 
@@ -74,7 +74,7 @@ RSpec.describe Daytona::Services::SnapshotService do
   describe "#delete" do
     it "DELETEs the snapshot by id" do
       stub = stub_request(:delete, snapshots_url("/snap-1"))
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       service.delete("snap-1")
 

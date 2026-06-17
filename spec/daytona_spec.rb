@@ -6,14 +6,14 @@ RSpec.describe Daytona do
   end
 
   describe ".configure" do
-    after { Daytona.reset_configuration! }
+    after { described_class.reset_configuration! }
 
     it "yields a configuration object" do
-      expect { |b| Daytona.configure(&b) }.to yield_with_args(Daytona::Configuration)
+      expect { |b| described_class.configure(&b) }.to yield_with_args(Daytona::Configuration)
     end
 
     it "returns the configuration" do
-      config = Daytona.configure do |c|
+      config = described_class.configure do |c|
         c.api_key = "test-key"
       end
 
@@ -21,20 +21,20 @@ RSpec.describe Daytona do
     end
 
     it "persists configuration" do
-      Daytona.configure do |c|
+      described_class.configure do |c|
         c.api_key = "persistent-key"
       end
 
-      expect(Daytona.configuration.api_key).to eq("persistent-key")
+      expect(described_class.configuration.api_key).to eq("persistent-key")
     end
   end
 
   describe ".reset_configuration!" do
     it "resets the configuration" do
-      Daytona.configure { |c| c.api_key = "to-be-reset" }
-      Daytona.reset_configuration!
+      described_class.configure { |c| c.api_key = "to-be-reset" }
+      described_class.reset_configuration!
 
-      expect(Daytona.configuration).to be_nil
+      expect(described_class.configuration).to be_nil
     end
   end
 end

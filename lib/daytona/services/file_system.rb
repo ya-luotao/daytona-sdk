@@ -151,10 +151,10 @@ module Daytona
       #   )
       def replace_in_files(files, pattern, new_value)
         toolbox_post("/filesystem/replace", body: {
-          files: files,
-          pattern: pattern,
-          newValue: new_value,
-        })
+                       files: files,
+                       pattern: pattern,
+                       newValue: new_value,
+                     })
       end
 
       # Search for files by name pattern

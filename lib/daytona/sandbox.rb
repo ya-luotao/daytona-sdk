@@ -179,7 +179,9 @@ module Daytona
     # @example
     #   sandbox.set_labels("env" => "production", "team" => "backend")
     def set_labels(labels)
-      string_labels = labels.transform_values { |v| v.is_a?(TrueClass) || v.is_a?(FalseClass) ? v.to_s.downcase : v.to_s }
+      string_labels = labels.transform_values do |v|
+        v.is_a?(TrueClass) || v.is_a?(FalseClass) ? v.to_s.downcase : v.to_s
+      end
       response = @http_client.put("/sandbox/#{@id}/labels", body: { labels: string_labels })
       @labels = response["labels"] || response[:labels] || string_labels
     end
@@ -308,7 +310,10 @@ module Daytona
     #
     # @param interval [Integer] Minutes of inactivity before auto-stop (0 = disable)
     def set_autostop_interval(interval)
-      raise DaytonaError, "Auto-stop interval must be a non-negative integer" if !interval.is_a?(Integer) || interval.negative?
+      if !interval.is_a?(Integer) || interval.negative?
+        raise DaytonaError,
+              "Auto-stop interval must be a non-negative integer"
+      end
 
       @http_client.put("/sandbox/#{@id}/autostop-interval", body: { interval: interval })
       @auto_stop_interval = interval
@@ -318,7 +323,10 @@ module Daytona
     #
     # @param interval [Integer] Minutes before auto-archive (0 = max interval)
     def set_auto_archive_interval(interval)
-      raise DaytonaError, "Auto-archive interval must be a non-negative integer" if !interval.is_a?(Integer) || interval.negative?
+      if !interval.is_a?(Integer) || interval.negative?
+        raise DaytonaError,
+              "Auto-archive interval must be a non-negative integer"
+      end
 
       @http_client.put("/sandbox/#{@id}/auto-archive-interval", body: { interval: interval })
       @auto_archive_interval = interval
@@ -377,9 +385,7 @@ module Daytona
 
     def process_sandbox_data(data)
       # Guard against non-hash data (e.g., string or array responses)
-      unless data.is_a?(Hash)
-        raise DaytonaError, "Invalid sandbox data: expected Hash, got #{data.class}"
-      end
+      raise DaytonaError, "Invalid sandbox data: expected Hash, got #{data.class}" unless data.is_a?(Hash)
 
       @id = data["id"] || data[:id]
       @name = data["name"] || data[:name]
@@ -398,7 +404,8 @@ module Daytona
       @error_reason = data["errorReason"] || data["error_reason"] || data[:error_reason]
       @recoverable = data["recoverable"] || data[:recoverable]
       @auto_stop_interval = data["autoStopInterval"] || data["auto_stop_interval"] || data[:auto_stop_interval]
-      @auto_archive_interval = data["autoArchiveInterval"] || data["auto_archive_interval"] || data[:auto_archive_interval]
+      @auto_archive_interval = data["autoArchiveInterval"] || data["auto_archive_interval"] ||
+                               data[:auto_archive_interval]
       @auto_delete_interval = data["autoDeleteInterval"] || data["auto_delete_interval"] || data[:auto_delete_interval]
       @volumes = data["volumes"] || data[:volumes] || []
       @created_at = data["createdAt"] || data["created_at"] || data[:created_at]
@@ -453,7 +460,6 @@ module Daytona
 
     def toolbox_get(path)
       ensure_toolbox_url!
-      url = "#{@toolbox_url}#{path}"
 
       # Create a new HTTP client for toolbox requests
       toolbox_client = API::HttpClient.new(

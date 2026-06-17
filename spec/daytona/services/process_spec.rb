@@ -21,9 +21,9 @@ RSpec.describe Daytona::Services::Process do
 
     it "includes cwd, env and timeout when provided" do
       stub = stub_request(:post, toolbox_url("/process/execute"))
-             .with(body: { command: "npm test", cwd: "/app", env: { "NODE_ENV" => "test" }, timeout: 30 })
-             .to_return(status: 200, body: { exitCode: 0 }.to_json,
-                        headers: { "Content-Type" => "application/json" })
+        .with(body: { command: "npm test", cwd: "/app", env: { "NODE_ENV" => "test" }, timeout: 30 })
+        .to_return(status: 200, body: { exitCode: 0 }.to_json,
+                   headers: { "Content-Type" => "application/json" })
 
       process.exec("npm test", cwd: "/app", env: { "NODE_ENV" => "test" }, timeout: 30)
 
@@ -34,9 +34,9 @@ RSpec.describe Daytona::Services::Process do
   describe "#code_run" do
     it "defaults to python and returns an ExecuteResponse" do
       stub = stub_request(:post, toolbox_url("/process/code-run"))
-             .with(body: { code: "print(1)", language: "python" })
-             .to_return(status: 200, body: { exitCode: 0, result: "1\n" }.to_json,
-                        headers: { "Content-Type" => "application/json" })
+        .with(body: { code: "print(1)", language: "python" })
+        .to_return(status: 200, body: { exitCode: 0, result: "1\n" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
 
       response = process.code_run("print(1)")
 
@@ -48,8 +48,8 @@ RSpec.describe Daytona::Services::Process do
   describe "session management" do
     it "create_session POSTs sessionId" do
       stub = stub_request(:post, toolbox_url("/process/session"))
-             .with(body: { sessionId: "s1" })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { sessionId: "s1" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       process.create_session("s1")
 
@@ -66,7 +66,7 @@ RSpec.describe Daytona::Services::Process do
 
     it "delete_session DELETEs the session" do
       stub = stub_request(:delete, toolbox_url("/process/session/s1"))
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       process.delete_session("s1")
 
@@ -131,8 +131,8 @@ RSpec.describe Daytona::Services::Process do
   describe "PTY lifecycle" do
     it "create_pty_session POSTs id and optional fields" do
       stub = stub_request(:post, toolbox_url("/pty"))
-             .with(body: { id: "pty1", cwd: "/home/user", ptySize: { cols: 80, rows: 24 } })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { id: "pty1", cwd: "/home/user", ptySize: { cols: 80, rows: 24 } })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       process.create_pty_session("pty1", cwd: "/home/user", pty_size: { cols: 80, rows: 24 })
 
@@ -149,7 +149,7 @@ RSpec.describe Daytona::Services::Process do
 
     it "kill_pty_session DELETEs the session" do
       stub = stub_request(:delete, toolbox_url("/pty/pty1"))
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       process.kill_pty_session("pty1")
 
@@ -158,8 +158,8 @@ RSpec.describe Daytona::Services::Process do
 
     it "resize_pty_session POSTs the new size" do
       stub = stub_request(:post, toolbox_url("/pty/pty1/resize"))
-             .with(body: { cols: 100, rows: 40 })
-             .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
+        .with(body: { cols: 100, rows: 40 })
+        .to_return(status: 200, body: "{}", headers: { "Content-Type" => "application/json" })
 
       process.resize_pty_session("pty1", { cols: 100, rows: 40 })
 

@@ -65,9 +65,9 @@ RSpec.describe Daytona::Client do
 
     it "serializes label filters as JSON" do
       stub = stub_request(:get, sandbox_url)
-             .with(query: { labels: { env: "prod" }.to_json })
-             .to_return(status: 200, body: { items: [], total: 0, page: 1, totalPages: 1 }.to_json,
-                        headers: { "Content-Type" => "application/json" })
+        .with(query: { labels: { env: "prod" }.to_json })
+        .to_return(status: 200, body: { items: [], total: 0, page: 1, totalPages: 1 }.to_json,
+                   headers: { "Content-Type" => "application/json" })
 
       client.list(labels: { env: "prod" })
 
@@ -109,8 +109,8 @@ RSpec.describe Daytona::Client do
 
     it "creates a default Python snapshot sandbox" do
       stub = stub_request(:post, sandbox_url)
-             .to_return(status: 200, body: { id: "sb-new", state: "started" }.to_json,
-                        headers: { "Content-Type" => "application/json" })
+        .to_return(status: 200, body: { id: "sb-new", state: "started" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
 
       sandbox = client.create
 
@@ -121,9 +121,9 @@ RSpec.describe Daytona::Client do
 
     it "builds a Dockerfile buildInfo for a string image and waits for start" do
       stub = stub_request(:post, sandbox_url)
-             .with(body: hash_including(buildInfo: { dockerfileContent: "FROM python:3.12-slim\n" }))
-             .to_return(status: 200, body: { id: "sb-img", state: "starting" }.to_json,
-                        headers: { "Content-Type" => "application/json" })
+        .with(body: hash_including(buildInfo: { dockerfileContent: "FROM python:3.12-slim\n" }))
+        .to_return(status: 200, body: { id: "sb-img", state: "starting" }.to_json,
+                   headers: { "Content-Type" => "application/json" })
       stub_request(:get, sandbox_url("/sb-img"))
         .to_return(status: 200, body: { id: "sb-img", state: "started" }.to_json,
                    headers: { "Content-Type" => "application/json" })
@@ -206,7 +206,7 @@ RSpec.describe Daytona::PaginatedSandboxes do
       expect(page.next_page?).to be(true)
     end
 
-    context "on the last page" do
+    context "when on the last page" do
       let(:page_num) { 3 }
 
       it "is false" do
