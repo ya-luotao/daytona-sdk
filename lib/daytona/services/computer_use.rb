@@ -115,11 +115,11 @@ module Daytona
         # @param double [Boolean] Double-click
         def click(x, y, button: "left", double: false)
           @service.send(:toolbox_post, "/computer-use/mouse/click", body: {
-            x: x,
-            y: y,
-            button: button,
-            double: double,
-          })
+                          x: x,
+                          y: y,
+                          button: button,
+                          double: double,
+                        })
         end
 
         # Double-click at position
@@ -140,12 +140,12 @@ module Daytona
         # @param button [String] Mouse button
         def drag(start_x, start_y, end_x, end_y, button: "left")
           @service.send(:toolbox_post, "/computer-use/mouse/drag", body: {
-            startX: start_x,
-            startY: start_y,
-            endX: end_x,
-            endY: end_y,
-            button: button,
-          })
+                          startX: start_x,
+                          startY: start_y,
+                          endX: end_x,
+                          endY: end_y,
+                          button: button,
+                        })
         end
 
         # Scroll at position
@@ -156,11 +156,11 @@ module Daytona
         # @param amount [Integer] Scroll amount
         def scroll(x, y, direction, amount: 1)
           @service.send(:toolbox_post, "/computer-use/mouse/scroll", body: {
-            x: x,
-            y: y,
-            direction: direction,
-            amount: amount,
-          })
+                          x: x,
+                          y: y,
+                          direction: direction,
+                          amount: amount,
+                        })
         end
       end
 
@@ -186,9 +186,9 @@ module Daytona
         # @param modifiers [Array<String>] Modifier keys (ctrl, alt, shift, meta)
         def press(key, modifiers: [])
           @service.send(:toolbox_post, "/computer-use/keyboard/press", body: {
-            key: key,
-            modifiers: modifiers,
-          })
+                          key: key,
+                          modifiers: modifiers,
+                        })
         end
 
         # Press a hotkey combination
@@ -220,9 +220,9 @@ module Daytona
         # @return [String] Base64-encoded image data
         def take_region(region, show_cursor: false)
           @service.send(:toolbox_post, "/computer-use/screenshot/region", body: {
-            region: region,
-            showCursor: show_cursor,
-          })
+                          region: region,
+                          showCursor: show_cursor,
+                        })
         end
 
         # Take a compressed screenshot

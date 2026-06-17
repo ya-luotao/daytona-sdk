@@ -107,7 +107,7 @@ module Daytona
 
       private
 
-      def poll_build_logs(snapshot_id, on_logs)
+      def poll_build_logs(snapshot_id, _on_logs)
         loop do
           snapshot = get(snapshot_id)
           state = snapshot["state"] || snapshot[:state]

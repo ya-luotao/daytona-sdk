@@ -114,9 +114,9 @@ RSpec.describe Daytona::Models::VolumeMount do
       mount = described_class.new(volume_id: "vol-123", mount_path: "/data")
 
       expect(mount.to_h).to eq({
-        volumeId: "vol-123",
-        mountPath: "/data"
-      })
+                                 volumeId: "vol-123",
+                                 mountPath: "/data",
+                               })
     end
 
     it "includes subpath when present" do
@@ -165,7 +165,7 @@ RSpec.describe Daytona::Models::Volume do
         "state" => "ready",
         "createdAt" => "2024-01-01T00:00:00Z",
         "updatedAt" => "2024-01-01T00:00:00Z",
-        "lastUsedAt" => "2024-01-01T00:00:00Z"
+        "lastUsedAt" => "2024-01-01T00:00:00Z",
       }
       volume = described_class.from_hash(hash)
 

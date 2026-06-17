@@ -1,13 +1,20 @@
 # frozen_string_literal: true
 
 require "simplecov"
-SimpleCov.start do
-  add_filter "/spec/"
-end if ENV["COVERAGE"]
+if ENV["COVERAGE"]
+  SimpleCov.start do
+    add_filter "/spec/"
+    # Guard against coverage regressions. Ratchet this up as coverage improves.
+    minimum_coverage 92
+  end
+end
 
 require "daytona"
 require "webmock/rspec"
 require "vcr"
+
+# Load support files (shared helpers, matchers, etc.)
+Dir[File.join(__dir__, "support", "**", "*.rb")].each { |f| require f }
 
 VCR.configure do |config|
   config.cassette_library_dir = "spec/fixtures/vcr_cassettes"

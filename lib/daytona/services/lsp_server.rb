@@ -53,10 +53,10 @@ module Daytona
       #   lsp.did_open("/project/main.py", "python", "import os\nprint(os.getcwd())")
       def did_open(path, language_id, content)
         toolbox_post("/lsp/did-open", body: {
-          path: path,
-          languageId: language_id,
-          content: content,
-        })
+                       path: path,
+                       languageId: language_id,
+                       content: content,
+                     })
       end
 
       # Notify that a document was changed
@@ -68,9 +68,9 @@ module Daytona
       #   lsp.did_change("/project/main.py", "import os\nprint('changed')")
       def did_change(path, content)
         toolbox_post("/lsp/did-change", body: {
-          path: path,
-          content: content,
-        })
+                       path: path,
+                       content: content,
+                     })
       end
 
       # Notify that a document was closed
@@ -91,9 +91,9 @@ module Daytona
       #   completions.each { |c| puts c['label'] }
       def completions(path, position)
         response = toolbox_post("/lsp/completions", body: {
-          path: path,
-          position: position,
-        })
+                                  path: path,
+                                  position: position,
+                                })
         response["items"] || response[:items] || []
       end
 
@@ -108,9 +108,9 @@ module Daytona
       #   puts hover['contents'] if hover
       def hover(path, position)
         toolbox_post("/lsp/hover", body: {
-          path: path,
-          position: position,
-        })
+                       path: path,
+                       position: position,
+                     })
       end
 
       # Get document symbols
@@ -137,9 +137,9 @@ module Daytona
       #   puts "Found at: #{definition['path']}:#{definition['range']['start']['line']}" if definition
       def definition(path, position)
         toolbox_post("/lsp/definition", body: {
-          path: path,
-          position: position,
-        })
+                       path: path,
+                       position: position,
+                     })
       end
 
       # Get references to a symbol
@@ -153,9 +153,9 @@ module Daytona
       #   refs.each { |r| puts "#{r['path']}:#{r['range']['start']['line']}" }
       def references(path, position)
         response = toolbox_post("/lsp/references", body: {
-          path: path,
-          position: position,
-        })
+                                  path: path,
+                                  position: position,
+                                })
         response["references"] || response[:references] || []
       end
 

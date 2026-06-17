@@ -45,7 +45,9 @@ module Daytona
       def get(path, params: {}, timeout: DEFAULT_TIMEOUT)
         handle_response do
           @connection.get(normalize_path(path)) do |req|
-            req.params = params
+            # Merge rather than overwrite so any query string already embedded in
+            # `path` is preserved (some callers build the query into the path).
+            req.params = req.params.merge(params) if params && !params.empty?
             req.options.timeout = timeout
           end
         end
@@ -151,7 +153,7 @@ module Daytona
             io,
             content_type,
             filename
-          )
+          ),
         }
 
         handle_response do
@@ -203,9 +205,7 @@ module Daytona
           conn.headers["X-Daytona-Source"] = "ruby-sdk"
           conn.headers["X-Daytona-SDK-Version"] = Daytona::VERSION
 
-          if @organization_id && @api_key.nil?
-            conn.headers["X-Daytona-Organization-ID"] = @organization_id
-          end
+          conn.headers["X-Daytona-Organization-ID"] = @organization_id if @organization_id && @api_key.nil?
         end
       end
 
@@ -220,9 +220,7 @@ module Daytona
           conn.headers["X-Daytona-Source"] = "ruby-sdk"
           conn.headers["X-Daytona-SDK-Version"] = Daytona::VERSION
 
-          if @organization_id && @api_key.nil?
-            conn.headers["X-Daytona-Organization-ID"] = @organization_id
-          end
+          conn.headers["X-Daytona-Organization-ID"] = @organization_id if @organization_id && @api_key.nil?
         end
       end
 
@@ -235,16 +233,21 @@ module Daytona
         handle_error(response) unless response.success?
 
         body = response.body
-        content_type = response.headers["content-type"] rescue "unknown"
+        content_type = begin
+          response.headers["content-type"]
+        rescue StandardError
+          "unknown"
+        end
 
         # Log response details for debugging
         if defined?(Rails) && Rails.logger
-          Rails.logger.debug "[Daytona::HttpClient] Response status=#{response.status}, content-type=#{content_type}, body_type=#{body.class}"
+          Rails.logger.debug "[Daytona::HttpClient] Response status=#{response.status}, " \
+                             "content-type=#{content_type}, body_type=#{body.class}"
         end
 
         # If body is a string but should be JSON, try to parse it
         if body.is_a?(String) && !body.empty?
-          if content_type&.include?("json") || body.start_with?('{', '[')
+          if content_type&.include?("json") || body.start_with?("{", "[")
             begin
               parsed = JSON.parse(body)
               Rails.logger.debug "[Daytona::HttpClient] Manually parsed JSON response" if defined?(Rails)
@@ -255,7 +258,10 @@ module Daytona
           end
 
           # Still a string - log for debugging
-          Rails.logger.warn "[Daytona::HttpClient] Unexpected string response (content-type: #{content_type}): #{body[0..200]}" if defined?(Rails)
+          if defined?(Rails)
+            Rails.logger.warn "[Daytona::HttpClient] Unexpected string response " \
+                              "(content-type: #{content_type}): #{body[0..200]}"
+          end
         end
 
         body

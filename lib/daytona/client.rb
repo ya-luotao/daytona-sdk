@@ -112,7 +112,7 @@ module Daytona
       # Handle build logs if creating from image
       if response["state"] == "pending_build" && on_snapshot_create_logs
         handle_build_logs(response["id"], on_snapshot_create_logs, timeout, start_time)
-        response = @http_client.get("/sandbox/#{response['id']}")
+        response = @http_client.get("/sandbox/#{response["id"]}")
       end
 
       # Create Sandbox instance
@@ -149,25 +149,30 @@ module Daytona
       response = @http_client.get("/sandbox/#{sandbox_id_or_name}")
 
       # Validate response is a hash (single sandbox)
-      unless response.is_a?(Hash)
-        # If it's a string that looks like JSON, try to parse it
-        if response.is_a?(String) && response.start_with?('{')
-          begin
-            parsed = JSON.parse(response)
-            if parsed.is_a?(Hash)
-              Rails.logger.info "[Daytona::Client] Parsed string response as JSON" if defined?(Rails)
-              response = parsed
-            end
-          rescue JSON::ParserError => e
-            Rails.logger.error "[Daytona::Client] Failed to parse response as JSON: #{e.message}" if defined?(Rails)
+      # If it's a string that looks like JSON, try to parse it
+      if !response.is_a?(Hash) && response.is_a?(String) && response.start_with?("{")
+        begin
+          parsed = JSON.parse(response)
+          if parsed.is_a?(Hash)
+            Rails.logger.info "[Daytona::Client] Parsed string response as JSON" if defined?(Rails)
+            response = parsed
           end
+        rescue JSON::ParserError => e
+          Rails.logger.error "[Daytona::Client] Failed to parse response as JSON: #{e.message}" if defined?(Rails)
         end
       end
 
       # Still not a hash? Raise error with details
       unless response.is_a?(Hash)
-        response_preview = response.to_s[0..500] rescue response.class.to_s
-        Rails.logger.error "[Daytona::Client] Invalid response type #{response.class} for sandbox #{sandbox_id_or_name}: #{response_preview}" if defined?(Rails)
+        response_preview = begin
+          response.to_s[0..500]
+        rescue StandardError
+          response.class.to_s
+        end
+        if defined?(Rails)
+          Rails.logger.error "[Daytona::Client] Invalid response type #{response.class} " \
+                             "for sandbox #{sandbox_id_or_name}: #{response_preview}"
+        end
         raise DaytonaError, "Invalid API response (#{response.class}): #{response_preview}"
       end
 
@@ -222,10 +227,10 @@ module Daytona
 
       # Handle both array response (non-paginated) and object response (paginated)
       sandbox_list = if response.is_a?(Array)
-        response
-      else
-        response["items"] || []
-      end
+                       response
+                     else
+                       response["items"] || []
+                     end
 
       items = sandbox_list.map do |sandbox_data|
         Sandbox.new(
@@ -299,13 +304,11 @@ module Daytona
     end
 
     def validate_create_params!(params)
-      if params.auto_stop_interval && params.auto_stop_interval.negative?
-        raise DaytonaError, "auto_stop_interval must be a non-negative integer"
-      end
+      raise DaytonaError, "auto_stop_interval must be a non-negative integer" if params.auto_stop_interval&.negative?
 
-      if params.auto_archive_interval && params.auto_archive_interval.negative?
-        raise DaytonaError, "auto_archive_interval must be a non-negative integer"
-      end
+      return unless params.auto_archive_interval&.negative?
+
+      raise DaytonaError, "auto_archive_interval must be a non-negative integer"
     end
 
     def build_create_sandbox_body(params)
@@ -325,23 +328,21 @@ module Daytona
       }.compact
 
       # Handle snapshot-based creation
-      if params.respond_to?(:snapshot) && params.snapshot
-        body[:snapshot] = params.snapshot
-      end
+      body[:snapshot] = params.snapshot if params.respond_to?(:snapshot) && params.snapshot
 
       # Handle image-based creation
       if params.respond_to?(:image) && params.image
-        if params.image.is_a?(String)
-          # Simple image name - wrap with FROM
-          body[:buildInfo] = {
-            dockerfileContent: "FROM #{params.image}\n",
-          }
-        else
-          # Daytona::Image object - use dockerfile directly (already has FROM)
-          body[:buildInfo] = {
-            dockerfileContent: params.image.dockerfile,
-          }
-        end
+        body[:buildInfo] = if params.image.is_a?(String)
+                             # Simple image name - wrap with FROM
+                             {
+                               dockerfileContent: "FROM #{params.image}\n",
+                             }
+                           else
+                             # Daytona::Image object - use dockerfile directly (already has FROM)
+                             {
+                               dockerfileContent: params.image.dockerfile,
+                             }
+                           end
       end
 
       # Handle resources
@@ -355,7 +356,7 @@ module Daytona
       body.compact
     end
 
-    def handle_build_logs(sandbox_id, callback, timeout, start_time)
+    def handle_build_logs(sandbox_id, _callback, timeout, start_time)
       # Poll for build logs and status
       loop do
         elapsed = Time.now - start_time
@@ -422,8 +423,8 @@ module Daytona
     # Iterate over items
     #
     # @yield [Sandbox] Each sandbox in the page
-    def each(&block)
-      @items.each(&block)
+    def each(&)
+      @items.each(&)
     end
 
     include Enumerable

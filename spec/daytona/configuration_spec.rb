@@ -96,12 +96,12 @@ RSpec.describe Daytona::Configuration do
       )
 
       expect(config.to_h).to eq({
-        api_key: "key",
-        jwt_token: nil,
-        organization_id: nil,
-        api_url: "https://api.com",
-        target: "us",
-      })
+                                  api_key: "key",
+                                  jwt_token: nil,
+                                  organization_id: nil,
+                                  api_url: "https://api.com",
+                                  target: "us",
+                                })
     end
   end
 end
